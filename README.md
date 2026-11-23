@@ -16,11 +16,11 @@ root installs both apps.
 
 ```bash
 pnpm install                     # both apps, from the repo root
-pnpm db:up                       # starts Postgres + Redis in Docker (creates the wood_shop database)
+pnpm db:up                       # starts Postgres (port 5433) + Redis (6379) in Docker, creates wood_shop
 
 # Backend
 cd backend
-cp .env.template .env            # already points at the Docker services
+cp .env.template .env            # already points at the Docker services (Windows: copy .env.template .env)
 npx medusa db:migrate
 pnpm seed                        # demo catalogue, zones, settings; prints the publishable key
 npx medusa user -e admin@example.com -p supersecret
@@ -34,8 +34,15 @@ pnpm dev                         # http://localhost:8000/it
 
 Database: `pnpm db:down` stops the containers (data is kept in a Docker
 volume), `pnpm db:reset` wipes and recreates the database (then migrate and seed
-again). If ports 5432 or 6379 are taken, set `POSTGRES_PORT` / `REDIS_PORT`
+again). Postgres uses host port 5433 so it does not clash with a Postgres installed
+on the machine. If ports 5433 or 6379 are taken, set `POSTGRES_PORT` / `REDIS_PORT`
 before `pnpm db:up` and adjust `DATABASE_URL` / `REDIS_URL` in `backend/.env`.
+
+Troubleshooting `database "wood_shop" does not exist`: the backend reached a
+different Postgres than the Docker one (usually a local install on 5432). Check
+that `DATABASE_URL` in `backend/.env` uses port 5433 and that `docker compose ps`
+shows `postgres` as healthy. If the volume was created by an older setup, run
+`pnpm db:reset`.
 
 From the root you can also run `pnpm dev:backend`, `pnpm dev:storefront`,
 `pnpm seed` and `pnpm test` (unit tests for zone matching, pallet pricing and
