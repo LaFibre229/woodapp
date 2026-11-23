@@ -22,15 +22,19 @@ pnpm db:up                       # starts Postgres (port 5433) + Redis (6379) in
 cd backend
 cp .env.template .env            # already points at the Docker services (Windows: copy .env.template .env)
 npx medusa db:migrate
-pnpm seed                        # demo catalogue, zones, settings; prints the publishable key
+pnpm seed                        # demo catalogue, zones, settings; writes the publishable key to storefront/.env.local
 npx medusa user -e admin@example.com -p supersecret
 pnpm dev                         # http://localhost:9000/app
 
 # Storefront (another terminal; needs the backend running, also for `pnpm build`)
 cd storefront
-cp .env.template .env.local      # paste the publishable key from the seed
 pnpm dev                         # http://localhost:8000/it
 ```
+
+The storefront needs `NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY` in `storefront/.env.local`.
+`pnpm seed` writes it there (creating the file from `.env.template`). If you see
+"A valid publishable key is required", copy the key from Admin > Paramètres >
+Clés API publiables into that variable and restart the storefront.
 
 Database: `pnpm db:down` stops the containers (data is kept in a Docker
 volume), `pnpm db:reset` wipes and recreates the database (then migrate and seed

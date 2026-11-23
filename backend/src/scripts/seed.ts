@@ -1,4 +1,6 @@
 import type { ExecArgs } from "@medusajs/framework/types"
+import fs from "node:fs"
+import path from "node:path"
 import {
   ContainerRegistrationKeys,
   Modules,
@@ -490,4 +492,31 @@ export default async function seedWoodShop({ container }: ExecArgs) {
 
   logger.info("Seed complete.")
   logger.info(`Publishable API key: ${apiKey!.token}`)
+  writeStorefrontKey(apiKey!.token, logger)
+}
+
+/**
+ * Puts the publishable key into storefront/.env.local (created from
+ * .env.template if missing), so the storefront works right after seeding.
+ */
+function writeStorefrontKey(token: string, logger: { info: (m: string) => void }) {
+  try {
+    const dir = path.resolve(process.cwd(), "..", "storefront")
+    if (!fs.existsSync(dir)) return
+    const envFile = path.join(dir, ".env.local")
+    const template = path.join(dir, ".env.template")
+    let content = fs.existsSync(envFile)
+      ? fs.readFileSync(envFile, "utf8")
+      : fs.existsSync(template)
+        ? fs.readFileSync(template, "utf8")
+        : ""
+    const line = `NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=${token}`
+    content = /^NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=.*$/m.test(content)
+      ? content.replace(/^NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=.*$/m, line)
+      : `${content.replace(/\s*$/, "")}\n${line}\n`
+    fs.writeFileSync(envFile, content)
+    logger.info(`Publishable key written to ${envFile} (restart the storefront).`)
+  } catch (e) {
+    logger.info(`Could not write storefront/.env.local: ${(e as Error).message}`)
+  }
 }
