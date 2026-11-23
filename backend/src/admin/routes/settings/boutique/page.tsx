@@ -209,7 +209,7 @@ const ShopSettingsPage = () => {
 }
 
 export const config = defineRouteConfig({
-  label: "Boutique",
+  label: "Société et acompte",
   icon: BuildingStorefront,
 })
 

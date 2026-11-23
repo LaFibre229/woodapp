@@ -10,27 +10,35 @@ businesses.
 
 ## Run locally
 
-Requirements: Node 20+, PostgreSQL 16, Redis. Yarn 4 is bundled in each folder.
+Requirements: Node 20+, pnpm 10, PostgreSQL 16, Redis. The repo is a pnpm
+workspace: one `pnpm install` at the root installs both apps.
 
 ```bash
+pnpm install                     # both apps, from the repo root
+
 # Backend
 cd backend
 cp .env.template .env            # adjust DATABASE_URL
-yarn install
 createdb wood_shop
 npx medusa db:migrate
-yarn seed                        # demo catalogue, zones, settings; prints the publishable key
+pnpm seed                        # demo catalogue, zones, settings; prints the publishable key
 npx medusa user -e admin@example.com -p supersecret
-yarn dev                         # http://localhost:9000/app
+pnpm dev                         # http://localhost:9000/app
 
-# Storefront (another terminal)
+# Storefront (another terminal; needs the backend running, also for `pnpm build`)
 cd storefront
 cp .env.template .env.local      # paste the publishable key from the seed
-yarn install
-yarn dev                         # http://localhost:8000/it
+pnpm dev                         # http://localhost:8000/it
 ```
 
-Unit tests for zone matching, pallet pricing and the deposit: `cd backend && yarn test:unit`.
+From the root you can also run `pnpm dev:backend`, `pnpm dev:storefront`,
+`pnpm seed` and `pnpm test` (unit tests for zone matching, pallet pricing and
+the deposit).
+
+`.npmrc` sets `shamefully-hoist=true`: Medusa loads its modules and admin
+extensions by package name at runtime, so packages must also be reachable from
+the root `node_modules`. Both apps use the same React version (19.3.1, the one
+the Medusa 2.23 admin ships with) so only one copy is installed.
 
 ## What is built (layer 2: development)
 
@@ -48,7 +56,7 @@ for the product type "Legna da ardere". To confirm with the accountant.
 sign-up, with no manual check, and the "Prezzi aziende" price list applies
 right away. Businesses see prices VAT excluded.
 
-**Deposit (acconto).** Percentage set in Admin > Paramètres > Boutique (50% by
+**Deposit (acconto).** Percentage set in Admin > Paramètres > Société et acompte (50% by
 default, optional different rate for businesses). Shown in the cart, checkout
 and order confirmation, and stored on each order (`metadata.deposit_amount`,
 `balance_amount`). The admin order page shows "Acompte et solde". The actual

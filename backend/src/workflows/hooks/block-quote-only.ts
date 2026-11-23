@@ -1,4 +1,5 @@
 import { addToCartWorkflow } from "@medusajs/medusa/core-flows"
+import type { Query } from "@medusajs/framework"
 import { ContainerRegistrationKeys, MedusaError } from "@medusajs/framework/utils"
 
 /**
@@ -8,7 +9,7 @@ import { ContainerRegistrationKeys, MedusaError } from "@medusajs/framework/util
 addToCartWorkflow.hooks.validate(async ({ input }, { container }) => {
   const ids = (input.items ?? []).map((i: any) => i.variant_id).filter(Boolean)
   if (!ids.length) return
-  const query = container.resolve(ContainerRegistrationKeys.QUERY)
+  const query = container.resolve<Query>(ContainerRegistrationKeys.QUERY)
   const { data } = await query.graph({
     entity: "product_variant",
     fields: ["id", "title", "metadata"],
