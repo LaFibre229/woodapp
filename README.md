@@ -10,16 +10,17 @@ businesses.
 
 ## Run locally
 
-Requirements: Node 20+, pnpm 10, PostgreSQL 16, Redis. The repo is a pnpm
-workspace: one `pnpm install` at the root installs both apps.
+Requirements: Node 20+, pnpm 10 and Docker (for PostgreSQL 16 and Redis 7, see
+`docker-compose.yml`). The repo is a pnpm workspace: one `pnpm install` at the
+root installs both apps.
 
 ```bash
 pnpm install                     # both apps, from the repo root
+pnpm db:up                       # starts Postgres + Redis in Docker (creates the wood_shop database)
 
 # Backend
 cd backend
-cp .env.template .env            # adjust DATABASE_URL
-createdb wood_shop
+cp .env.template .env            # already points at the Docker services
 npx medusa db:migrate
 pnpm seed                        # demo catalogue, zones, settings; prints the publishable key
 npx medusa user -e admin@example.com -p supersecret
@@ -30,6 +31,11 @@ cd storefront
 cp .env.template .env.local      # paste the publishable key from the seed
 pnpm dev                         # http://localhost:8000/it
 ```
+
+Database: `pnpm db:down` stops the containers (data is kept in a Docker
+volume), `pnpm db:reset` wipes and recreates the database (then migrate and seed
+again). If ports 5432 or 6379 are taken, set `POSTGRES_PORT` / `REDIS_PORT`
+before `pnpm db:up` and adjust `DATABASE_URL` / `REDIS_URL` in `backend/.env`.
 
 From the root you can also run `pnpm dev:backend`, `pnpm dev:storefront`,
 `pnpm seed` and `pnpm test` (unit tests for zone matching, pallet pricing and

@@ -10,6 +10,9 @@
     "dev:storefront": "pnpm --filter wood-shop-storefront dev",
     "build": "pnpm -r build",
     "seed": "pnpm --filter wood-shop-backend seed",
-    "test": "pnpm --filter wood-shop-backend test:unit"
+    "test": "pnpm --filter wood-shop-backend test:unit",
+    "db:up": "docker compose up -d --wait",
+    "db:down": "docker compose down",
+    "db:reset": "docker compose down -v && docker compose up -d --wait"
   }
 }
