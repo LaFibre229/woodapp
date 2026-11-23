@@ -3,9 +3,19 @@
 import { Heading, Text, clx } from "@medusajs/ui"
 
 import PaymentButton from "../payment-button"
+import DepositSummary, { DepositInfo } from "@modules/shop/components/deposit-summary"
+import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import { useSearchParams } from "next/navigation"
 
-const Review = ({ cart }: { cart: any }) => {
+const Review = ({
+  cart,
+  deposit,
+  companyName,
+}: {
+  cart: any
+  deposit?: DepositInfo | null
+  companyName?: string
+}) => {
   const searchParams = useSearchParams()
 
   const isOpen = searchParams.get("step") === "review"
@@ -30,18 +40,24 @@ const Review = ({ cart }: { cart: any }) => {
             }
           )}
         >
-          Review
+          Conferma
         </Heading>
       </div>
       {isOpen && previousStepsCompleted && (
         <>
+          {deposit && (
+            <div className="mb-6">
+              <DepositSummary deposit={deposit} currencyCode={cart.currency_code} />
+            </div>
+          )}
           <div className="flex items-start gap-x-1 w-full mb-6">
             <div className="w-full">
               <Text className="txt-medium-plus text-ui-fg-base mb-1">
-                By clicking the Place Order button, you confirm that you have
-                read, understand and accept our Terms of Use, Terms of Sale and
-                Returns Policy and acknowledge that you have read Medusa
-                Store&apos;s Privacy Policy.
+                Confermando l&apos;ordine dichiari di aver letto e accettato le{" "}
+                <LocalizedClientLink href="/condizioni-di-vendita" className="underline">
+                  condizioni di vendita
+                </LocalizedClientLink>{" "}
+                e l&apos;informativa sulla privacy di {companyName ?? "questo negozio"}.
               </Text>
             </div>
           </div>

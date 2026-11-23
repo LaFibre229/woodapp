@@ -11,11 +11,11 @@ export const paymentInfoMap: Record<
   { title: string; icon: React.JSX.Element }
 > = {
   pp_stripe_stripe: {
-    title: "Credit card",
+    title: "Carta di credito",
     icon: <CreditCard />,
   },
   "pp_medusa-payments_default": {
-    title: "Credit card",
+    title: "Carta di credito",
     icon: <CreditCard />,
   },
   "pp_stripe-ideal_stripe": {
@@ -31,7 +31,8 @@ export const paymentInfoMap: Record<
     icon: <PayPal />,
   },
   pp_system_default: {
-    title: "Manual Payment",
+    // Placeholder until the payments layer (Stripe, PayPal, bank transfer)
+    title: "Pagamento di prova (acconto)",
     icon: <CreditCard />,
   },
   // Add more payment providers here

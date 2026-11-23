@@ -1,6 +1,7 @@
 "use server"
 
 import { sdk } from "@lib/config"
+import { isValidVatNumber } from "@lib/util/italy"
 import medusaError from "@lib/util/medusa-error"
 import { HttpTypes } from "@medusajs/types"
 import { revalidateTag } from "next/cache"
@@ -61,11 +62,30 @@ export const updateCustomer = async (body: HttpTypes.StoreUpdateCustomer) => {
 
 export async function signup(_currentState: unknown, formData: FormData) {
   const password = formData.get("password") as string
+  const text = (key: string) => {
+    const v = formData.get(key)
+    return typeof v === "string" && v.trim() ? v.trim() : undefined
+  }
+  const isBusiness = formData.get("customer_type") === "business"
   const customerForm = {
     email: formData.get("email") as string,
     first_name: formData.get("first_name") as string,
     last_name: formData.get("last_name") as string,
     phone: formData.get("phone") as string,
+    company_name: isBusiness ? text("company_name") : undefined,
+    // customer_type = business puts the customer in the business price group
+    metadata: isBusiness
+      ? {
+          customer_type: "business",
+          vat_number: text("vat_number")?.toUpperCase(),
+          sdi_code: text("sdi_code")?.toUpperCase(),
+          pec: text("pec")?.toLowerCase(),
+        }
+      : { customer_type: "private", tax_code: text("tax_code")?.toUpperCase() },
+  }
+
+  if (isBusiness && !isValidVatNumber(customerForm.metadata.vat_number ?? "")) {
+    return "La partita IVA non è valida (11 cifre)."
   }
 
   try {

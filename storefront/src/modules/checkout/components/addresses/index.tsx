@@ -12,6 +12,7 @@ import { useActionState } from "react"
 import BillingAddress from "../billing_address"
 import ErrorMessage from "../error-message"
 import ShippingAddress from "../shipping-address"
+import InvoiceFields from "@modules/shop/components/invoice-fields"
 import { SubmitButton } from "../submit-button"
 
 const Addresses = ({
@@ -46,7 +47,7 @@ const Addresses = ({
           level="h2"
           className="flex flex-row text-3xl-regular gap-x-2 items-baseline"
         >
-          Shipping Address
+          Indirizzo di consegna
           {!isOpen && <CheckCircleSolid />}
         </Heading>
         {!isOpen && cart?.shipping_address && (
@@ -56,7 +57,7 @@ const Addresses = ({
               className="text-ui-fg-interactive hover:text-ui-fg-interactive-hover"
               data-testid="edit-address-button"
             >
-              Edit
+              Modifica
             </button>
           </Text>
         )}
@@ -77,14 +78,15 @@ const Addresses = ({
                   level="h2"
                   className="text-3xl-regular gap-x-4 pb-6 pt-8"
                 >
-                  Billing address
+                  Indirizzo di fatturazione
                 </Heading>
 
                 <BillingAddress cart={cart} />
               </div>
             )}
+            <InvoiceFields cart={cart} customer={customer} />
             <SubmitButton className="mt-6" data-testid="submit-address-button">
-              Continue to delivery
+              Continua alla consegna
             </SubmitButton>
             <ErrorMessage error={message} data-testid="address-error-message" />
           </div>
@@ -100,7 +102,7 @@ const Addresses = ({
                     data-testid="shipping-address-summary"
                   >
                     <Text className="txt-medium-plus text-ui-fg-base mb-1">
-                      Shipping Address
+                      Indirizzo di consegna
                     </Text>
                     <Text className="txt-medium text-ui-fg-subtle">
                       {cart.shipping_address.first_name}{" "}
@@ -115,7 +117,7 @@ const Addresses = ({
                       {cart.shipping_address.city}
                     </Text>
                     <Text className="txt-medium text-ui-fg-subtle">
-                      {cart.shipping_address.country_code?.toUpperCase()}
+                      {cart.shipping_address.province?.toUpperCase()} · Italia
                     </Text>
                   </div>
 
@@ -124,7 +126,7 @@ const Addresses = ({
                     data-testid="shipping-contact-summary"
                   >
                     <Text className="txt-medium-plus text-ui-fg-base mb-1">
-                      Contact
+                      Contatti
                     </Text>
                     <Text className="txt-medium text-ui-fg-subtle">
                       {cart.shipping_address.phone}
@@ -139,12 +141,12 @@ const Addresses = ({
                     data-testid="billing-address-summary"
                   >
                     <Text className="txt-medium-plus text-ui-fg-base mb-1">
-                      Billing Address
+                      Indirizzo di fatturazione
                     </Text>
 
                     {sameAsBilling ? (
                       <Text className="txt-medium text-ui-fg-subtle">
-                        Billing and delivery address are the same.
+                        Uguale all'indirizzo di consegna.
                       </Text>
                     ) : (
                       <>
@@ -161,10 +163,11 @@ const Addresses = ({
                           {cart.billing_address?.city}
                         </Text>
                         <Text className="txt-medium text-ui-fg-subtle">
-                          {cart.billing_address?.country_code?.toUpperCase()}
+                          {cart.billing_address?.province?.toUpperCase()} · Italia
                         </Text>
                       </>
                     )}
+                    <InvoiceSummary cart={cart} />
                   </div>
                 </div>
               </div>
@@ -177,6 +180,30 @@ const Addresses = ({
         </div>
       )}
       <Divider className="mt-8" />
+    </div>
+  )
+}
+
+const InvoiceSummary = ({ cart }: { cart: HttpTypes.StoreCart }) => {
+  const meta = (cart.metadata ?? {}) as Record<string, any>
+  const inv = (meta.invoice ?? {}) as Record<string, string>
+  const lines =
+    meta.customer_type === "business"
+      ? [
+          inv.company_name,
+          inv.vat_number && `P.IVA ${inv.vat_number}`,
+          inv.sdi_code && `SDI ${inv.sdi_code}`,
+          inv.pec && `PEC ${inv.pec}`,
+        ]
+      : [inv.tax_code && `C.F. ${inv.tax_code}`]
+  if (!lines.some(Boolean)) return null
+  return (
+    <div className="mt-2" data-testid="invoice-summary">
+      {lines.filter(Boolean).map((l) => (
+        <Text key={l} className="txt-medium text-ui-fg-subtle">
+          {l}
+        </Text>
+      ))}
     </div>
   )
 }

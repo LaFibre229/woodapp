@@ -16,6 +16,20 @@ module.exports = defineConfig({
   },
   admin: {
     backendUrl: process.env.MEDUSA_BACKEND_URL || "http://localhost:9000",
+    // Admin plugins (draft orders, cloud) and the dashboard must share one copy
+    // of these packages, or their React contexts don't match.
+    vite: () => ({
+      resolve: {
+        dedupe: [
+          "react",
+          "react-dom",
+          "@tanstack/react-query",
+          "react-router-dom",
+          "react-i18next",
+          "i18next",
+        ],
+      },
+    }),
   },
   modules: [
     { resolve: "./src/modules/shop-settings" },

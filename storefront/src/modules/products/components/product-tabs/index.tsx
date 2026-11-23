@@ -11,16 +11,35 @@ type ProductTabsProps = {
   product: HttpTypes.StoreProduct
 }
 
+// Labels for the technical specs kept in product metadata
+const SPEC_LABELS: Record<string, string> = {
+  species: "Essenza",
+  length_cm: "Lunghezza (cm)",
+  moisture: "Umidità",
+  certification: "Certificazione",
+  ash: "Ceneri",
+  diameter_mm: "Diametro (mm)",
+  bag_kg: "Peso sacco (kg)",
+  fuel: "Combustibile",
+  power_kw: "Potenza (kW)",
+  ducted: "Canalizzabile",
+  room_m2: "Riscalda fino a (m²)",
+}
+
 const ProductTabs = ({ product }: ProductTabsProps) => {
+  const isStove = product.type?.value?.toLowerCase().includes("stufa")
   const tabs = [
     {
-      label: "Product Information",
+      label: "Caratteristiche",
       component: <ProductInfoTab product={product} />,
     },
     {
-      label: "Shipping & Returns",
+      label: "Consegna e ritiro",
       component: <ShippingInfoTab />,
     },
+    ...(isStove
+      ? [{ label: "Installazione e incentivi", component: <StoveInfoTab /> }]
+      : []),
   ]
 
   return (
@@ -41,39 +60,39 @@ const ProductTabs = ({ product }: ProductTabsProps) => {
   )
 }
 
+const formatSpec = (value: unknown) =>
+  typeof value === "boolean" ? (value ? "Sì" : "No") : String(value)
+
 const ProductInfoTab = ({ product }: ProductTabsProps) => {
+  const specs = Object.entries((product.metadata ?? {}) as Record<string, unknown>).filter(
+    ([k, v]) => SPEC_LABELS[k] && v !== null && v !== undefined && v !== ""
+  )
   return (
     <div className="text-small-regular py-8">
-      <div className="grid grid-cols-2 gap-x-8">
-        <div className="flex flex-col gap-y-4">
-          <div>
-            <span className="font-semibold">Material</span>
-            <p>{product.material ? product.material : "-"}</p>
-          </div>
-          <div>
-            <span className="font-semibold">Country of origin</span>
-            <p>{product.origin_country ? product.origin_country : "-"}</p>
-          </div>
-          <div>
-            <span className="font-semibold">Type</span>
-            <p>{product.type ? product.type.value : "-"}</p>
-          </div>
+      <dl className="grid grid-cols-2 gap-x-8 gap-y-4">
+        <div>
+          <dt className="font-semibold">Tipologia</dt>
+          <dd>{product.type ? product.type.value : "-"}</dd>
         </div>
-        <div className="flex flex-col gap-y-4">
+        {product.material && (
           <div>
-            <span className="font-semibold">Weight</span>
-            <p>{product.weight ? `${product.weight} g` : "-"}</p>
+            <dt className="font-semibold">Materiale</dt>
+            <dd>{product.material}</dd>
           </div>
+        )}
+        {specs.map(([k, v]) => (
+          <div key={k}>
+            <dt className="font-semibold">{SPEC_LABELS[k]}</dt>
+            <dd>{formatSpec(v)}</dd>
+          </div>
+        ))}
+        {product.origin_country && (
           <div>
-            <span className="font-semibold">Dimensions</span>
-            <p>
-              {product.length && product.width && product.height
-                ? `${product.length}L x ${product.width}W x ${product.height}H`
-                : "-"}
-            </p>
+            <dt className="font-semibold">Origine</dt>
+            <dd>{product.origin_country.toUpperCase()}</dd>
           </div>
-        </div>
-      </div>
+        )}
+      </dl>
     </div>
   )
 }
@@ -85,31 +104,28 @@ const ShippingInfoTab = () => {
         <div className="flex items-start gap-x-2">
           <FastDelivery />
           <div>
-            <span className="font-semibold">Fast delivery</span>
+            <span className="font-semibold">Consegna in tutta Italia</span>
             <p className="max-w-sm">
-              Your package will arrive in 3-5 business days at your pick up
-              location or in the comfort of your home.
+              Consegniamo con i nostri camion o con corriere bancali. Il costo dipende dalla
+              zona e dal numero di bancali: verifica il tuo CAP qui accanto.
             </p>
           </div>
         </div>
         <div className="flex items-start gap-x-2">
           <Refresh />
           <div>
-            <span className="font-semibold">Simple exchanges</span>
+            <span className="font-semibold">Ritiro in sede gratuito</span>
             <p className="max-w-sm">
-              Is the fit not quite right? No worries - we&apos;ll exchange your
-              product for a new one.
+              Puoi scegliere il ritiro presso la nostra sede al momento dell&apos;ordine.
             </p>
           </div>
         </div>
         <div className="flex items-start gap-x-2">
           <Back />
           <div>
-            <span className="font-semibold">Easy returns</span>
+            <span className="font-semibold">Acconto per prenotare</span>
             <p className="max-w-sm">
-              Just return your product and we&apos;ll refund your money. No
-              questions asked – we&apos;ll do our best to make sure your return
-              is hassle-free.
+              Paghi un acconto all&apos;ordine e il saldo prima della consegna o al ritiro.
             </p>
           </div>
         </div>
@@ -117,5 +133,19 @@ const ShippingInfoTab = () => {
     </div>
   )
 }
+
+const StoveInfoTab = () => (
+  <div className="text-small-regular py-8 flex flex-col gap-y-4">
+    <p>
+      La stufa viene venduta senza installazione. Per legge l&apos;installazione deve essere
+      eseguita da un tecnico abilitato, che rilascia la dichiarazione di conformità. Possiamo
+      metterti in contatto con un installatore della tua zona.
+    </p>
+    <p>
+      Le stufe ad alta efficienza possono accedere agli incentivi statali (ad esempio il Conto
+      Termico). Verifica i requisiti con il tuo installatore o sul sito del GSE.
+    </p>
+  </div>
+)
 
 export default ProductTabs

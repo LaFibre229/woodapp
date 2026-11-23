@@ -2,7 +2,7 @@
 
 import { Radio, RadioGroup } from "@headlessui/react"
 import { setShippingMethod } from "@lib/data/cart"
-import { calculatePriceForShippingOption } from "@lib/data/fulfillment"
+import { calculateDeliveryPrice } from "@lib/data/fulfillment"
 import { convertToLocale } from "@lib/util/money"
 import { CheckCircleSolid, Loader } from "@medusajs/icons"
 import { HttpTypes } from "@medusajs/types"
@@ -19,6 +19,8 @@ const PICKUP_OPTION_OFF = "__PICKUP_OFF"
 type ShippingProps = {
   cart: HttpTypes.StoreCart
   availableShippingMethods: HttpTypes.StoreCartShippingOption[] | null
+  pickupAddress?: string | null
+  pickupNotes?: string | null
 }
 
 function formatAddress(address: HttpTypes.StoreCartAddress) {
@@ -40,8 +42,8 @@ function formatAddress(address: HttpTypes.StoreCartAddress) {
     ret += `, ${address.postal_code} ${address.city}`
   }
 
-  if (address.country_code) {
-    ret += `, ${address.country_code.toUpperCase()}`
+  if (address.province) {
+    ret += ` (${address.province.toUpperCase()})`
   }
 
   return ret
@@ -50,7 +52,10 @@ function formatAddress(address: HttpTypes.StoreCartAddress) {
 const Shipping: React.FC<ShippingProps> = ({
   cart,
   availableShippingMethods,
+  pickupAddress,
+  pickupNotes,
 }) => {
+  const [priceErrors, setPriceErrors] = useState<Record<string, string>>({})
   const [isLoading, setIsLoading] = useState(false)
   const [isLoadingPrices, setIsLoadingPrices] = useState(true)
 
@@ -86,18 +91,23 @@ const Shipping: React.FC<ShippingProps> = ({
     if (_shippingMethods?.length) {
       const promises = _shippingMethods
         .filter((sm) => sm.price_type === "calculated")
-        .map((sm) => calculatePriceForShippingOption(sm.id, cart.id))
+        .map((sm) => calculateDeliveryPrice(sm.id, cart.id))
 
       if (promises.length) {
-        Promise.allSettled(promises).then((res) => {
+        Promise.all(promises).then((res) => {
           const pricesMap: Record<string, number> = {}
-          res
-            .filter((r) => r.status === "fulfilled")
-            .forEach((p) => (pricesMap[p.value?.id || ""] = p.value?.amount!))
+          const errors: Record<string, string> = {}
+          res.forEach((r) => {
+            if (typeof r.amount === "number") pricesMap[r.id] = r.amount
+            else if (r.error) errors[r.id] = r.error
+          })
 
           setCalculatedPricesMap(pricesMap)
+          setPriceErrors(errors)
           setIsLoadingPrices(false)
         })
+      } else {
+        setIsLoadingPrices(false)
       }
     }
 
@@ -161,7 +171,7 @@ const Shipping: React.FC<ShippingProps> = ({
             }
           )}
         >
-          Delivery
+          Consegna
           {!isOpen && (cart.shipping_methods?.length ?? 0) > 0 && (
             <CheckCircleSolid />
           )}
@@ -176,7 +186,7 @@ const Shipping: React.FC<ShippingProps> = ({
                 className="text-ui-fg-interactive hover:text-ui-fg-interactive-hover"
                 data-testid="edit-delivery-button"
               >
-                Edit
+                Modifica
               </button>
             </Text>
           )}
@@ -186,10 +196,10 @@ const Shipping: React.FC<ShippingProps> = ({
           <div className="grid">
             <div className="flex flex-col">
               <span className="font-medium txt-medium text-ui-fg-base">
-                Shipping method
+                Modalità di consegna
               </span>
               <span className="mb-4 text-ui-fg-muted txt-medium">
-                How would you like you order delivered
+                Come vuoi ricevere il tuo ordine?
               </span>
             </div>
             <div data-testid="delivery-options-container">
@@ -223,11 +233,11 @@ const Shipping: React.FC<ShippingProps> = ({
                           checked={showPickupOptions === PICKUP_OPTION_ON}
                         />
                         <span className="text-base-regular">
-                          Pick up your order
+                          Ritiro in sede
                         </span>
                       </div>
                       <span className="justify-self-end text-ui-fg-base">
-                        -
+                        Gratis
                       </span>
                     </Radio>
                   </RadioGroup>
@@ -266,9 +276,23 @@ const Shipping: React.FC<ShippingProps> = ({
                           <MedusaRadio
                             checked={option.id === shippingMethodId}
                           />
-                          <span className="text-base-regular">
-                            {option.name}
-                          </span>
+                          <div className="flex flex-col">
+                            <span className="text-base-regular">
+                              {option.name}
+                            </span>
+                            {priceErrors[option.id] ? (
+                              <span
+                                className="text-small-regular text-rose-500"
+                                data-testid="delivery-option-unavailable"
+                              >
+                                {priceErrors[option.id]}
+                              </span>
+                            ) : (
+                              <span className="text-small-regular text-ui-fg-muted">
+                                In base alla zona e al numero di bancali
+                              </span>
+                            )}
+                          </div>
                         </div>
                         <span className="justify-self-end text-ui-fg-base">
                           {option.price_type === "flat" ? (
@@ -299,10 +323,10 @@ const Shipping: React.FC<ShippingProps> = ({
             <div className="grid">
               <div className="flex flex-col">
                 <span className="font-medium txt-medium text-ui-fg-base">
-                  Store
+                  Ritiro
                 </span>
                 <span className="mb-4 text-ui-fg-muted txt-medium">
-                  Choose a store near you
+                  Punto di ritiro
                 </span>
               </div>
               <div data-testid="delivery-options-container">
@@ -341,11 +365,17 @@ const Shipping: React.FC<ShippingProps> = ({
                                 {option.name}
                               </span>
                               <span className="text-base-regular text-ui-fg-muted">
-                                {formatAddress(
-                                  option.service_zone?.fulfillment_set?.location
-                                    ?.address
-                                )}
+                                {pickupAddress ||
+                                  formatAddress(
+                                    option.service_zone?.fulfillment_set?.location
+                                      ?.address
+                                  )}
                               </span>
+                              {pickupNotes && (
+                                <span className="text-small-regular text-ui-fg-muted whitespace-pre-line">
+                                  {pickupNotes}
+                                </span>
+                              )}
                             </div>
                           </div>
                           <span className="justify-self-end text-ui-fg-base">
@@ -376,7 +406,7 @@ const Shipping: React.FC<ShippingProps> = ({
               disabled={!cart.shipping_methods?.[0]}
               data-testid="submit-delivery-option-button"
             >
-              Continue to payment
+              Continua al pagamento
             </Button>
           </div>
         </>
@@ -386,7 +416,7 @@ const Shipping: React.FC<ShippingProps> = ({
             {cart && (cart.shipping_methods?.length ?? 0) > 0 && (
               <div className="flex flex-col w-1/3">
                 <Text className="txt-medium-plus text-ui-fg-base mb-1">
-                  Method
+                  Modalità
                 </Text>
                 <Text className="txt-medium text-ui-fg-subtle">
                   {cart.shipping_methods!.at(-1)!.name}{" "}

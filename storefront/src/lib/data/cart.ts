@@ -1,6 +1,7 @@
 "use server"
 
 import { sdk } from "@lib/config"
+import { isValidSdi, isValidTaxCode, isValidVatNumber } from "@lib/util/italy"
 import medusaError from "@lib/util/medusa-error"
 import { HttpTypes } from "@medusajs/types"
 import { revalidateTag } from "next/cache"
@@ -339,9 +340,9 @@ export async function setAddresses(currentState: unknown, formData: FormData) {
     if (!formData) {
       throw new Error("No form data found when setting addresses")
     }
-    const cartId = getCartId()
+    const cartId = await getCartId()
     if (!cartId) {
-      throw new Error("No existing cart found when setting addresses")
+      throw new Error("Carrello non trovato. Ricarica la pagina.")
     }
 
     const data = {
@@ -359,6 +360,44 @@ export async function setAddresses(currentState: unknown, formData: FormData) {
       },
       email: formData.get("email"),
     } as any
+
+    // Invoice details for the Italian e-invoice (fattura elettronica)
+    const text = (key: string) => {
+      const v = formData.get(key)
+      return typeof v === "string" && v.trim() ? v.trim().toUpperCase() : null
+    }
+    const customerType = formData.get("customer_type") === "business" ? "business" : "private"
+    const invoice =
+      customerType === "business"
+        ? {
+            company_name: (formData.get("invoice.company_name") as string)?.trim() || null,
+            vat_number: text("invoice.vat_number"),
+            tax_code: text("invoice.tax_code"),
+            sdi_code: text("invoice.sdi_code"),
+            pec: (formData.get("invoice.pec") as string)?.trim().toLowerCase() || null,
+          }
+        : { tax_code: text("invoice.tax_code") }
+    if (customerType === "private" && !isValidTaxCode(invoice.tax_code ?? "")) {
+      throw new Error("Il codice fiscale non è valido (16 caratteri).")
+    }
+    if (customerType === "business") {
+      const b = invoice as Record<string, string | null>
+      if (!b.company_name) throw new Error("Inserisci la ragione sociale.")
+      if (!isValidVatNumber(b.vat_number ?? "")) {
+        throw new Error("La partita IVA non è valida (11 cifre).")
+      }
+      if (b.sdi_code && !isValidSdi(b.sdi_code)) {
+        throw new Error("Il codice SDI deve avere 7 caratteri.")
+      }
+      if (!b.sdi_code && !b.pec) {
+        throw new Error("Indica il codice SDI oppure la PEC per la fattura elettronica.")
+      }
+      data.shipping_address.company = data.shipping_address.company || b.company_name
+    }
+    if (!/^\d{5}$/.test(String(data.shipping_address.postal_code ?? "").trim())) {
+      throw new Error("Il CAP deve avere 5 cifre.")
+    }
+    data.metadata = { customer_type: customerType, invoice }
 
     const sameAsBilling = formData.get("same_as_billing")
     if (sameAsBilling === "on") data.billing_address = data.shipping_address

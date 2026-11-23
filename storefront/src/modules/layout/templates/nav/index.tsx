@@ -1,42 +1,49 @@
 import { Suspense } from "react"
 
-import { listRegions } from "@lib/data/regions"
-import { listLocales } from "@lib/data/locales"
-import { getLocale } from "@lib/data/locale-actions"
-import { StoreRegion } from "@medusajs/types"
+import { getShopSettings } from "@lib/data/shop"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import CartButton from "@modules/layout/components/cart-button"
 import SideMenu from "@modules/layout/components/side-menu"
 
 export default async function Nav() {
-  const [regions, locales, currentLocale] = await Promise.all([
-    listRegions().then((regions: StoreRegion[]) => regions),
-    listLocales(),
-    getLocale(),
-  ])
+  const settings = await getShopSettings()
 
   return (
     <div className="sticky top-0 inset-x-0 z-50 group">
       <header className="relative h-16 mx-auto border-b duration-200 bg-white border-ui-border-base">
         <nav className="content-container txt-xsmall-plus text-ui-fg-subtle flex items-center justify-between w-full h-full text-small-regular">
-          <div className="flex-1 basis-0 h-full flex items-center">
+          <div className="flex-1 basis-0 h-full flex items-center gap-x-6">
             <div className="h-full">
-              <SideMenu regions={regions} locales={locales} currentLocale={currentLocale} />
+              <SideMenu companyName={settings.company_name} />
+            </div>
+            <div className="hidden small:flex items-center gap-x-6 h-full">
+              <LocalizedClientLink className="hover:text-ui-fg-base" href="/categories/legna-da-ardere">
+                Legna
+              </LocalizedClientLink>
+              <LocalizedClientLink className="hover:text-ui-fg-base" href="/categories/pellet">
+                Pellet
+              </LocalizedClientLink>
+              <LocalizedClientLink className="hover:text-ui-fg-base" href="/categories/stufe">
+                Stufe
+              </LocalizedClientLink>
             </div>
           </div>
 
           <div className="flex items-center h-full">
             <LocalizedClientLink
               href="/"
-              className="txt-compact-xlarge-plus hover:text-ui-fg-base uppercase"
+              className="txt-compact-xlarge-plus hover:text-ui-fg-base uppercase text-center"
               data-testid="nav-store-link"
             >
-              Medusa Store
+              {settings.company_name}
             </LocalizedClientLink>
           </div>
 
           <div className="flex items-center gap-x-6 h-full flex-1 basis-0 justify-end">
             <div className="hidden small:flex items-center gap-x-6 h-full">
+              <LocalizedClientLink className="hover:text-ui-fg-base" href="/preventivo">
+                Preventivo camion
+              </LocalizedClientLink>
               <LocalizedClientLink
                 className="hover:text-ui-fg-base"
                 href="/account"
@@ -52,7 +59,7 @@ export default async function Nav() {
                   href="/cart"
                   data-testid="nav-cart-link"
                 >
-                  Cart (0)
+                  Carrello (0)
                 </LocalizedClientLink>
               }
             >

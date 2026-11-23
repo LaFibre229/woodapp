@@ -62,8 +62,10 @@ export const listProducts = async ({
           limit,
           offset,
           region_id: region?.id,
+          // country_code makes Medusa return prices with and without VAT
+          country_code: region?.countries?.[0]?.iso_2 ?? "it",
           fields:
-            "*variants.calculated_price,+variants.inventory_quantity,*variants.images,+metadata,+tags,",
+            "*variants.calculated_price,+variants.inventory_quantity,*variants.images,+variants.metadata,+variants.variant_rank,+metadata,+tags,*type,*categories",
           ...queryParams,
         },
         headers,

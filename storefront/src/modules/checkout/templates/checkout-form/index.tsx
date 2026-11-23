@@ -1,5 +1,6 @@
 import { listCartShippingMethods } from "@lib/data/fulfillment"
 import { listCartPaymentMethods } from "@lib/data/payment"
+import { getCartDeposit, getShopSettings } from "@lib/data/shop"
 import { HttpTypes } from "@medusajs/types"
 import Addresses from "@modules/checkout/components/addresses"
 import Payment from "@modules/checkout/components/payment"
@@ -17,8 +18,12 @@ export default async function CheckoutForm({
     return null
   }
 
-  const shippingMethods = await listCartShippingMethods(cart.id)
-  const paymentMethods = await listCartPaymentMethods(cart.region?.id ?? "")
+  const [shippingMethods, paymentMethods, settings, deposit] = await Promise.all([
+    listCartShippingMethods(cart.id),
+    listCartPaymentMethods(cart.region?.id ?? ""),
+    getShopSettings(),
+    getCartDeposit(cart.id),
+  ])
 
   if (!shippingMethods || !paymentMethods) {
     return null
@@ -28,11 +33,22 @@ export default async function CheckoutForm({
     <div className="w-full grid grid-cols-1 gap-y-8">
       <Addresses cart={cart} customer={customer} />
 
-      <Shipping cart={cart} availableShippingMethods={shippingMethods} />
+      <Shipping
+        cart={cart}
+        availableShippingMethods={
+          settings.pickup_enabled
+            ? shippingMethods
+            : shippingMethods.filter(
+                (sm) => sm.service_zone?.fulfillment_set?.type !== "pickup"
+              )
+        }
+        pickupAddress={settings.pickup_address}
+        pickupNotes={settings.pickup_notes}
+      />
 
       <Payment cart={cart} availablePaymentMethods={paymentMethods} />
 
-      <Review cart={cart} />
+      <Review cart={cart} deposit={deposit} companyName={settings.company_name} />
     </div>
   )
 }
