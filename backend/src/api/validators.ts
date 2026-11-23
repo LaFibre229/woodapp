@@ -48,6 +48,10 @@ export const AdminUpdateShopSettings = z
     deposit_percent: percent,
     business_deposit_percent: percent.nullish(),
     business_group_id: optionalText,
+    bank_beneficiary: optionalText,
+    bank_iban: optionalText.transform((v) => (v ? v.replace(/\s+/g, "").toUpperCase() : v)),
+    bank_bic: optionalText,
+    bank_name: optionalText,
   })
   .partial()
 export type AdminUpdateShopSettingsType = z.infer<typeof AdminUpdateShopSettings>
@@ -85,3 +89,12 @@ export const AdminUpdateQuoteRequest = z.object({
   admin_notes: optionalText,
 })
 export type AdminUpdateQuoteRequestType = z.infer<typeof AdminUpdateQuoteRequest>
+
+export const StoreBalanceSession = z.object({ t: z.string().min(10) })
+export type StoreBalanceSessionType = z.infer<typeof StoreBalanceSession>
+
+export const StoreBalanceComplete = z.object({ t: z.string().min(10) })
+export type StoreBalanceCompleteType = z.infer<typeof StoreBalanceComplete>
+
+export const AdminMarkPaid = z.object({ part: z.enum(["deposit", "balance"]) })
+export type AdminMarkPaidType = z.infer<typeof AdminMarkPaid>

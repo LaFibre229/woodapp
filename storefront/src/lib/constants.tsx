@@ -1,5 +1,5 @@
 import React from "react"
-import { CreditCard } from "@medusajs/icons"
+import { Buildings as BuildingsIcon, CreditCard } from "@medusajs/icons"
 
 import Ideal from "@modules/common/icons/ideal"
 import Bancontact from "@modules/common/icons/bancontact"
@@ -11,8 +11,12 @@ export const paymentInfoMap: Record<
   { title: string; icon: React.JSX.Element }
 > = {
   pp_stripe_stripe: {
-    title: "Carta di credito",
+    title: "Carta, PayPal, Apple Pay o Google Pay",
     icon: <CreditCard />,
+  },
+  pp_bonifico_bonifico: {
+    title: "Bonifico bancario",
+    icon: <BuildingsIcon />,
   },
   "pp_medusa-payments_default": {
     title: "Carta di credito",
@@ -31,7 +35,7 @@ export const paymentInfoMap: Record<
     icon: <PayPal />,
   },
   pp_system_default: {
-    // Placeholder until the payments layer (Stripe, PayPal, bank transfer)
+    // Test payment, offered only while no Stripe key is set (local setup)
     title: "Pagamento di prova (acconto)",
     icon: <CreditCard />,
   },
@@ -47,6 +51,9 @@ export const isStripeLike = (providerId?: string) => {
 
 export const isPaypal = (providerId?: string) => {
   return providerId?.startsWith("pp_paypal")
+}
+export const isBonifico = (providerId?: string) => {
+  return providerId?.startsWith("pp_bonifico")
 }
 export const isManual = (providerId?: string) => {
   return providerId?.startsWith("pp_system_default")

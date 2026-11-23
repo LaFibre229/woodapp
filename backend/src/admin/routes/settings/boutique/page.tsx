@@ -59,6 +59,17 @@ const SECTIONS: {
       { key: "pickup_notes", label: "Instructions de retrait", multiline: true },
     ],
   },
+  {
+    title: "Virement bancaire (bonifico)",
+    description:
+      "Coordonnées affichées aux clients qui paient par virement, à la commande et sur la page de paiement du solde. Le virement n'est proposé que si l'IBAN est rempli.",
+    fields: [
+      { key: "bank_beneficiary", label: "Bénéficiaire", hint: "Par défaut, la raison sociale" },
+      { key: "bank_iban", label: "IBAN" },
+      { key: "bank_bic", label: "BIC / SWIFT" },
+      { key: "bank_name", label: "Banque" },
+    ],
+  },
 ]
 
 const ShopSettingsPage = () => {

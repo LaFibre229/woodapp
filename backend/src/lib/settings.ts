@@ -38,7 +38,19 @@ export const publicSettings = (s: Awaited<ReturnType<typeof getShopSettings>>) =
   pickup_notes: s.pickup_notes,
   deposit_percent: s.deposit_percent,
   business_deposit_percent: s.business_deposit_percent,
+  bank_transfer: bankDetails(s),
 })
+
+/** Bank details for transfers, or null when no IBAN is set yet. */
+export const bankDetails = (s: Awaited<ReturnType<typeof getShopSettings>>) =>
+  s.bank_iban
+    ? {
+        beneficiary: s.bank_beneficiary || s.company_name,
+        iban: s.bank_iban,
+        bic: s.bank_bic,
+        bank_name: s.bank_name,
+      }
+    : null
 
 /** Finds the business customer group: the one set in settings, else by name. */
 export const getBusinessGroupId = async (container: MedusaContainer): Promise<string | null> => {

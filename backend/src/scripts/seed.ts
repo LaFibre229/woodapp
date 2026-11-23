@@ -23,6 +23,7 @@ import {
   createTaxRegionsWorkflow,
   linkSalesChannelsToApiKeyWorkflow,
   linkSalesChannelsToStockLocationWorkflow,
+  updateRegionsWorkflow,
   updateStoresWorkflow,
 } from "@medusajs/medusa/core-flows"
 import { SHOP_SETTINGS_MODULE } from "../modules/shop-settings"
@@ -30,6 +31,7 @@ import type ShopSettingsModuleService from "../modules/shop-settings/service"
 import { DELIVERY_ZONE_MODULE } from "../modules/delivery-zone"
 import type DeliveryZoneModuleService from "../modules/delivery-zone/service"
 import { BUSINESS_GROUP_NAME } from "../lib/settings"
+import { linkPaymentProviders } from "../lib/payment-setup"
 
 /**
  * Demo data for development: Italy region with Italian VAT, the business
@@ -242,6 +244,7 @@ export default async function seedWoodShop({ container }: ExecArgs) {
           name: "Italia",
           currency_code: "eur",
           countries: ["it"],
+          // Stripe and bank transfer are added below (linkPaymentProviders)
           payment_providers: ["pp_system_default"],
           automatic_taxes: true,
           is_tax_inclusive: true,
@@ -250,6 +253,8 @@ export default async function seedWoodShop({ container }: ExecArgs) {
     },
   })
   const region = regions[0]
+  const paymentProviders = await linkPaymentProviders(container, updateRegionsWorkflow)
+  logger.info(`Payment providers: ${paymentProviders.join(", ")}`)
 
   // Product types drive the VAT rate (firewood 10%, the rest 22%)
   const { result: types } = await createProductTypesWorkflow(container).run({

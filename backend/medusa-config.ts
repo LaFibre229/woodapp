@@ -52,7 +52,31 @@ module.exports = defineConfig({
         ],
       },
     },
-    // Payment providers (Stripe, PayPal, bank transfer) are added in the
-    // payments layer. Until then the built-in system provider is used.
+    {
+      resolve: "@medusajs/medusa/payment",
+      options: {
+        providers: [
+          // Bank transfer (bonifico): order placed, money confirmed by hand
+          { resolve: "./src/modules/bonifico", id: "bonifico" },
+          // Stripe: cards, Apple Pay, Google Pay and PayPal (turned on in the
+          // Stripe dashboard). Only loaded when a key is set, so the shop
+          // still starts without one. The deposit is charged right away.
+          ...(process.env.STRIPE_API_KEY
+            ? [
+                {
+                  resolve: "@medusajs/medusa/payment-stripe",
+                  id: "stripe",
+                  options: {
+                    apiKey: process.env.STRIPE_API_KEY,
+                    webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
+                    capture: true,
+                    automaticPaymentMethods: true,
+                  },
+                },
+              ]
+            : []),
+        ],
+      },
+    },
   ],
 })

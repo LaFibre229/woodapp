@@ -249,6 +249,12 @@ export async function initiatePaymentSession(
   return sdk.store.payment
     .initiatePaymentSession(cart, data, {}, headers)
     .then(async (resp) => {
+      // Only the deposit (acconto) is charged at checkout: size the new
+      // session to it before the customer pays.
+      await sdk.client.fetch(`/store/carts/${cart.id}/deposit/session`, {
+        method: "POST",
+        headers,
+      })
       const cartCacheTag = await getCacheTag("carts")
       revalidateTag(cartCacheTag)
       return resp
