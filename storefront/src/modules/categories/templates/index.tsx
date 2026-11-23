@@ -1,8 +1,9 @@
 import { notFound } from "next/navigation"
 import { Suspense } from "react"
 
-import InteractiveLink from "@modules/common/components/interactive-link"
 import SkeletonProductGrid from "@modules/skeletons/templates/skeleton-product-grid"
+import { CATEGORY_COPY } from "@lib/util/category-display"
+import CatalogueHeader from "@modules/store/components/catalogue-header"
 import RefinementList from "@modules/store/components/refinement-list"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
 import PaginatedProducts from "@modules/store/templates/paginated-products"
@@ -37,46 +38,30 @@ export default function CategoryTemplate({
   getParents(category)
 
   return (
-    <div
-      className="flex flex-col small:flex-row small:items-start py-6 content-container"
-      data-testid="category-container"
-    >
-      <RefinementList sortBy={sort} data-testid="sort-by-container" />
-      <div className="w-full">
-        <div className="flex flex-row mb-8 text-2xl-semi gap-4">
-          {parents &&
-            parents.map((parent) => (
-              <span key={parent.id} className="text-ui-fg-subtle">
+    <div data-testid="category-container">
+      <CatalogueHeader
+        title={category.name}
+        description={category.description || CATEGORY_COPY[category.handle]}
+        handle={category.handle}
+        parents={[...parents].reverse()}
+        data-testid="category-page-title"
+      />
+      <div className="content-container py-6 small:py-10 flex flex-col gap-6 small:gap-8">
+        {!!category.category_children?.length && (
+          <ul className="flex flex-wrap gap-2">
+            {category.category_children.map((c) => (
+              <li key={c.id}>
                 <LocalizedClientLink
-                  className="mr-4 hover:text-black"
-                  href={`/categories/${parent.handle}`}
-                  data-testid="sort-by-link"
+                  href={`/categories/${c.handle}`}
+                  className="inline-flex h-9 items-center px-4 rounded-full bg-ember-50 text-ember-700 text-[13px] font-medium hover:bg-ember-100"
                 >
-                  {parent.name}
+                  {c.name}
                 </LocalizedClientLink>
-                /
-              </span>
+              </li>
             ))}
-          <h1 data-testid="category-page-title">{category.name}</h1>
-        </div>
-        {category.description && (
-          <div className="mb-8 text-base-regular">
-            <p>{category.description}</p>
-          </div>
+          </ul>
         )}
-        {category.category_children && (
-          <div className="mb-8 text-base-large">
-            <ul className="grid grid-cols-1 gap-2">
-              {category.category_children?.map((c) => (
-                <li key={c.id}>
-                  <InteractiveLink href={`/categories/${c.handle}`}>
-                    {c.name}
-                  </InteractiveLink>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
+        <RefinementList sortBy={sort} data-testid="sort-by-container" />
         <Suspense
           fallback={
             <SkeletonProductGrid

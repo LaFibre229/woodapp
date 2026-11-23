@@ -154,13 +154,42 @@ payment themselves. To receive them anyway, install the Stripe CLI
 the `whsec_...` it prints in `STRIPE_WEBHOOK_SECRET`. In production, add the
 same URL as an endpoint in the Stripe dashboard.
 
+## Branding (layer 4)
+
+**Name.** Tempio del Riscaldamento (from Admin > Paramètres > Société et
+acompte; the logo wordmark is fixed text in
+`storefront/src/modules/common/components/logo`).
+
+**Look.** Warm cream background, dark "bark" brown for text and the footer,
+ember orange for buttons and links, moss green for the business section.
+Headings use Fraunces (serif), body text Inter, both bundled with the app via
+`@fontsource` (no Google Fonts call). The colours live in
+`storefront/tailwind.config.js` (`cream`, `bark`, `ember`, `moss`) and in the
+Medusa UI variables at the top of `storefront/src/styles/globals.css`, which
+re-skin every Medusa button and field (cart, checkout and account included).
+
+**Logo.** A placeholder mark (a flame in an arched doorway over two logs) in
+`modules/common/components/logo` and `public/favicon.svg`. Replace both when
+the real logo exists.
+
+**Product pictures.** Until photos are uploaded in the admin, products show an
+illustration picked from the product or category handle (logs for wood, a sack
+for pellet, a stove for stoves): `modules/products/components/product-art`.
+Uploading a thumbnail or images in the admin replaces it automatically.
+
+**Pages.** Home (hero, reassurance strip, category tiles, product rails, how
+it works, business band), catalogue and category pages (title banner, sort
+chips), product page (gallery left, formats and price card right), and a
+mobile menu drawer. Category blurbs and order are in
+`storefront/src/lib/util/category-display.ts`.
+
 ## Not built yet (later layers)
 
 - Payments: Satispay and instalments; sending the balance link by email
   (needs the email provider from the deployment layer).
 - E-invoicing service (SdI) once the company and VAT number exist.
-- Branding: name, logo, colours, photos and copy. The UI is the starter's
-  neutral look for now.
+- Branding: final logo and real product photos (placeholders are in place, see
+  "Branding" above).
 - Deployment: hosting, domain, email, legal pages (placeholders exist at
   `/condizioni-di-vendita` and `/privacy`), live payments. Use the Redis event
   bus and cache modules in production.

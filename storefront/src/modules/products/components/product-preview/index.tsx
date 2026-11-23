@@ -1,9 +1,9 @@
 import { Text } from "@medusajs/ui"
-import { listProducts } from "@lib/data/products"
 import { getProductPrice } from "@lib/util/get-product-price"
 import { HttpTypes } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import Thumbnail from "../thumbnail"
+import { productKind } from "../product-art"
 import PreviewPrice from "./price"
 
 export default async function ProductPreview({
@@ -15,34 +15,50 @@ export default async function ProductPreview({
   isFeatured?: boolean
   region: HttpTypes.StoreRegion
 }) {
-  // const pricedProduct = await listProducts({
-  //   regionId: region.id,
-  //   queryParams: { id: [product.id!] },
-  // }).then(({ response }) => response.products[0])
-
-  // if (!pricedProduct) {
-  //   return null
-  // }
-
   const { cheapestPrice } = getProductPrice({
     product,
   })
 
+  const kind = productKind(
+    product.handle,
+    ...(product.categories ?? []).map((c) => c.handle)
+  )
+  const formats = product.variants?.length ?? 0
+
   return (
-    <LocalizedClientLink href={`/products/${product.handle}`} className="group">
-      <div data-testid="product-wrapper">
+    <LocalizedClientLink
+      href={`/products/${product.handle}`}
+      className="group block h-full"
+    >
+      <div data-testid="product-wrapper" className="flex flex-col h-full">
         <Thumbnail
           thumbnail={product.thumbnail}
           images={product.images}
           size="full"
           isFeatured={isFeatured}
+          kind={kind}
         />
-        <div className="flex txt-compact-medium mt-4 justify-between">
-          <Text className="text-ui-fg-subtle" data-testid="product-title">
+        <div className="flex flex-col gap-1 mt-3 small:mt-4">
+          <Text
+            className="font-display text-[17px] small:text-[19px] leading-snug text-bark-900 group-hover:text-ember-600 transition-colors"
+            data-testid="product-title"
+          >
             {product.title}
           </Text>
-          <div className="flex items-center gap-x-2">
-            {cheapestPrice && <PreviewPrice price={cheapestPrice} />}
+          {product.subtitle && (
+            <Text className="txt-small text-ui-fg-muted line-clamp-1">
+              {product.subtitle}
+            </Text>
+          )}
+          <div className="flex items-baseline justify-between gap-x-2 mt-1">
+            <div className="flex items-baseline gap-x-2">
+              {cheapestPrice && <PreviewPrice price={cheapestPrice} />}
+            </div>
+            {formats > 1 && (
+              <span className="hidden xsmall:inline text-[12px] text-ui-fg-muted">
+                {formats} formati
+              </span>
+            )}
           </div>
         </div>
       </div>
