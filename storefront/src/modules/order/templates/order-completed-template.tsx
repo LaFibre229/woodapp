@@ -8,6 +8,8 @@ import OrderDetails from "@modules/order/components/order-details"
 import ShippingDetails from "@modules/order/components/shipping-details"
 import PaymentDetails from "@modules/order/components/payment-details"
 import DepositSummary from "@modules/shop/components/deposit-summary"
+import BankTransferDetails from "@modules/shop/components/bank-transfer"
+import { isBonifico } from "@lib/constants"
 import { HttpTypes } from "@medusajs/types"
 
 type OrderCompletedTemplateProps = {
@@ -40,13 +42,17 @@ export const orderDeposit = async (order: HttpTypes.StoreOrder) => {
 export default async function OrderCompletedTemplate({
   order,
 }: OrderCompletedTemplateProps) {
-  const deposit = await orderDeposit(order)
+  const [deposit, settings] = await Promise.all([orderDeposit(order), getShopSettings()])
+  // Bank transfer chosen at checkout: show where to send the deposit
+  const depositPayment = order.payment_collections?.[0]?.payments?.[0]
+  const awaitingTransfer =
+    isBonifico(depositPayment?.provider_id) && !depositPayment?.captured_at
 
   return (
     <div className="py-6 min-h-[calc(100vh-64px)]">
       <div className="content-container flex flex-col justify-center items-center gap-y-10 max-w-4xl h-full w-full">
         <div
-          className="flex flex-col gap-4 max-w-4xl h-full bg-white w-full py-10"
+          className="flex flex-col gap-4 max-w-4xl h-full bg-ui-bg-base w-full py-10"
           data-testid="order-complete-container"
         >
           <Heading
@@ -63,6 +69,15 @@ export default async function OrderCompletedTemplate({
           <Items order={order} />
           <CartTotals totals={order} />
           <DepositSummary deposit={deposit} currencyCode={order.currency_code} paid />
+          {awaitingTransfer && settings.bank_transfer && (
+            <BankTransferDetails
+              bank={settings.bank_transfer}
+              amount={deposit.deposit_amount}
+              currencyCode={order.currency_code}
+              reference={`Acconto ordine n. ${order.display_id}`}
+              title="Paga l'acconto con bonifico"
+            />
+          )}
           <ShippingDetails order={order} />
           <PaymentDetails order={order} />
           <Help />

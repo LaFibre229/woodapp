@@ -1,13 +1,14 @@
 "use client"
 
 import { RadioGroup } from "@headlessui/react"
-import { isStripeLike, paymentInfoMap } from "@lib/constants"
+import { isBonifico, isStripeLike, paymentInfoMap } from "@lib/constants"
 import { initiatePaymentSession } from "@lib/data/cart"
 import { CheckCircleSolid, CreditCard } from "@medusajs/icons"
 import { Button, Container, Heading, Text, clx } from "@medusajs/ui"
 import ErrorMessage from "@modules/checkout/components/error-message"
 import PaymentContainer, {
-  StripeCardContainer,
+  BonificoContainer,
+  StripePaymentContainer,
 } from "@modules/checkout/components/payment-container"
 import Divider from "@modules/common/components/divider"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
@@ -26,7 +27,6 @@ const Payment = ({
 
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [cardBrand, setCardBrand] = useState<string | null>(null)
   const [cardComplete, setCardComplete] = useState(false)
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(
     activeSession?.provider_id ?? ""
@@ -42,9 +42,10 @@ const Payment = ({
     setError(null)
     setSelectedPaymentMethod(method)
     if (isStripeLike(method)) {
+      setCardComplete(false)
       await initiatePaymentSession(cart, {
         provider_id: method,
-      })
+      }).catch((err) => setError(err.message))
     }
   }
 
@@ -105,7 +106,7 @@ const Payment = ({
   }, [isOpen])
 
   return (
-    <div className="bg-white">
+    <div className="bg-ui-bg-base">
       <div className="flex flex-row items-center justify-between mb-6">
         <Heading
           level="h2"
@@ -143,13 +144,18 @@ const Payment = ({
                 {availablePaymentMethods.map((paymentMethod) => (
                   <div key={paymentMethod.id}>
                     {isStripeLike(paymentMethod.id) ? (
-                      <StripeCardContainer
+                      <StripePaymentContainer
                         paymentProviderId={paymentMethod.id}
                         selectedPaymentOptionId={selectedPaymentMethod}
                         paymentInfoMap={paymentInfoMap}
-                        setCardBrand={setCardBrand}
                         setError={setError}
-                        setCardComplete={setCardComplete}
+                        setComplete={setCardComplete}
+                      />
+                    ) : isBonifico(paymentMethod.id) ? (
+                      <BonificoContainer
+                        paymentProviderId={paymentMethod.id}
+                        selectedPaymentOptionId={selectedPaymentMethod}
+                        paymentInfoMap={paymentInfoMap}
                       />
                     ) : (
                       <PaymentContainer
@@ -194,8 +200,8 @@ const Payment = ({
             }
             data-testid="submit-payment-button"
           >
-            {!activeSession && isStripeLike(selectedPaymentMethod)
-              ? " Inserisci i dati della carta"
+            {isStripeLike(selectedPaymentMethod) && !cardComplete
+              ? "Completa i dati di pagamento"
               : "Continua alla conferma"}
           </Button>
         </div>
@@ -229,9 +235,11 @@ const Payment = ({
                     )}
                   </Container>
                   <Text>
-                    {isStripeLike(selectedPaymentMethod) && cardBrand
-                      ? cardBrand
-                      : "Another step will appear"}
+                    {isStripeLike(selectedPaymentMethod)
+                      ? "Addebito dell'acconto alla conferma"
+                      : isBonifico(selectedPaymentMethod)
+                        ? "IBAN e causale dopo la conferma"
+                        : "Acconto registrato alla conferma"}
                   </Text>
                 </div>
               </div>

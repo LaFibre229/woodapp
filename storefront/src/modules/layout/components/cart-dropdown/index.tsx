@@ -1,5 +1,6 @@
 "use client"
 
+import { ShoppingBag } from "@medusajs/icons"
 import {
   Popover,
   PopoverButton,
@@ -14,6 +15,7 @@ import LineItemOptions from "@modules/common/components/line-item-options"
 import LineItemPrice from "@modules/common/components/line-item-price"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import Thumbnail from "@modules/products/components/thumbnail"
+import { productKind } from "@modules/products/components/product-art"
 import { usePathname } from "next/navigation"
 import { Fragment, useEffect, useRef, useState } from "react"
 
@@ -82,10 +84,21 @@ const CartDropdown = ({
       <Popover className="relative h-full">
         <PopoverButton className="h-full">
           <LocalizedClientLink
-            className="hover:text-ui-fg-base"
+            className="flex items-center gap-3 h-10 px-3 rounded-full hover:bg-bark-900/5 font-medium text-bark-800"
             href="/cart"
             data-testid="nav-cart-link"
-          >{`Carrello (${totalItems})`}</LocalizedClientLink>
+            aria-label={`Carrello, ${totalItems} articoli`}
+          >
+            <span className="relative">
+              <ShoppingBag />
+              {totalItems > 0 && (
+                <span className="absolute -top-2 -right-2 min-w-[18px] h-[18px] px-1 rounded-full bg-ember-500 text-white text-[10px] leading-[18px] font-semibold text-center">
+                  {totalItems}
+                </span>
+              )}
+            </span>
+            <span className="hidden small:inline">Carrello</span>
+          </LocalizedClientLink>
         </PopoverButton>
         <Transition
           show={cartDropdownOpen}
@@ -99,11 +112,11 @@ const CartDropdown = ({
         >
           <PopoverPanel
             static
-            className="hidden small:block absolute top-[calc(100%+1px)] right-0 bg-white border-x border-b border-gray-200 w-[420px] text-ui-fg-base"
+            className="hidden small:block absolute top-[calc(100%+1px)] right-0 bg-cream-50 border border-ui-border-base rounded-b-large shadow-elevation-card-hover w-[420px] text-ui-fg-base"
             data-testid="nav-cart-dropdown"
           >
             <div className="p-4 flex items-center justify-center">
-              <h3 className="text-large-semi">Carrello</h3>
+              <h3 className="font-display text-xl">Il tuo carrello</h3>
             </div>
             {cartState && cartState.items?.length ? (
               <>
@@ -125,6 +138,7 @@ const CartDropdown = ({
                           className="w-24"
                         >
                           <Thumbnail
+                            kind={productKind(item.product_handle, item.title)}
                             thumbnail={item.thumbnail}
                             images={item.variant?.product?.images}
                             size="square"
@@ -151,7 +165,7 @@ const CartDropdown = ({
                                   data-testid="cart-item-quantity"
                                   data-value={item.quantity}
                                 >
-                                  Quantity: {item.quantity}
+                                  Quantità: {item.quantity}
                                 </span>
                               </div>
                               <div className="flex justify-end">
@@ -168,7 +182,7 @@ const CartDropdown = ({
                             className="mt-1"
                             data-testid="cart-item-remove-button"
                           >
-                            Remove
+                            Rimuovi
                           </DeleteButton>
                         </div>
                       </div>
@@ -177,7 +191,7 @@ const CartDropdown = ({
                 <div className="p-4 flex flex-col gap-y-4 text-small-regular">
                   <div className="flex items-center justify-between">
                     <span className="text-ui-fg-base font-semibold">
-                      Subtotal{" "}
+                      Subtotale{" "}
                       <span className="font-normal">(IVA inclusa)</span>
                     </span>
                     <span
@@ -205,8 +219,8 @@ const CartDropdown = ({
             ) : (
               <div>
                 <div className="flex py-16 flex-col gap-y-4 items-center justify-center">
-                  <div className="bg-gray-900 text-small-regular flex items-center justify-center w-6 h-6 rounded-full text-white">
-                    <span>0</span>
+                  <div className="bg-ember-100 text-ember-700 flex items-center justify-center w-12 h-12 rounded-full">
+                    <ShoppingBag />
                   </div>
                   <span>Il carrello è vuoto.</span>
                   <div>

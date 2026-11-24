@@ -7,7 +7,10 @@ import {
   AdminCreateDeliveryZone,
   AdminUpdateDeliveryZone,
   AdminUpdateQuoteRequest,
+  AdminMarkPaid,
   AdminUpdateShopSettings,
+  StoreBalanceComplete,
+  StoreBalanceSession,
   StoreCreateQuoteRequest,
 } from "./validators"
 
@@ -41,6 +44,21 @@ export default defineMiddlewares({
       matcher: "/admin/quote-requests/:id",
       method: "POST",
       middlewares: [validateAndTransformBody(AdminUpdateQuoteRequest)],
+    },
+    {
+      matcher: "/store/balance/:id/session",
+      method: "POST",
+      middlewares: [validateAndTransformBody(StoreBalanceSession)],
+    },
+    {
+      matcher: "/store/balance/:id/complete",
+      method: "POST",
+      middlewares: [validateAndTransformBody(StoreBalanceComplete)],
+    },
+    {
+      matcher: "/admin/order-payments/:id/mark-paid",
+      method: "POST",
+      middlewares: [validateAndTransformBody(AdminMarkPaid)],
     },
   ],
 })

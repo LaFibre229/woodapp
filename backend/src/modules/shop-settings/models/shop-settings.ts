@@ -31,6 +31,11 @@ const ShopSettings = model.define("shop_settings", {
   // Deposit (acconto) taken at checkout, in percent of the order total
   deposit_percent: model.number().default(50),
   business_deposit_percent: model.number().nullable(),
+  // Bank transfer (bonifico) details shown to customers who pay by transfer
+  bank_beneficiary: model.text().nullable(),
+  bank_iban: model.text().nullable(),
+  bank_bic: model.text().nullable(),
+  bank_name: model.text().nullable(),
   // Customer group that gets business prices on sign-up
   business_group_id: model.text().nullable(),
 })

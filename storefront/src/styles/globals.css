@@ -2,6 +2,88 @@
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
 
+/*
+ * Brand theme. Medusa UI components read these variables, so overriding them
+ * here re-skins every button, input, card and link (checkout included) in the
+ * shop's warm palette without touching the components themselves.
+ */
+@layer base {
+  :root {
+    --bg-base: #fdfaf5;
+    --bg-base-hover: #f7f0e6;
+    --bg-base-pressed: #ede0cd;
+    --bg-subtle: #f7f0e6;
+    --bg-subtle-hover: #efe4d4;
+    --bg-subtle-pressed: #ede0cd;
+    --bg-component: #f7f0e6;
+    --bg-component-hover: #efe4d4;
+    --bg-component-pressed: #ede0cd;
+    --bg-field: #fffdf9;
+    --bg-field-hover: #f7f0e6;
+    --bg-field-component: #fffdf9;
+    --bg-field-component-hover: #f7f0e6;
+    --bg-disabled: #efe7db;
+    --bg-highlight: #fdf1ea;
+    --bg-highlight-hover: #fadfcf;
+    --bg-interactive: #c9562a;
+    --bg-switch-off: #e3d5c1;
+    --bg-switch-off-hover: #dcc7aa;
+
+    --fg-base: #22170f;
+    --fg-subtle: #5a4434;
+    --fg-muted: #8a7260;
+    --fg-disabled: #b9a793;
+    --fg-interactive: #a9441f;
+    --fg-interactive-hover: #86351a;
+
+    --border-base: #e8dccb;
+    --border-strong: #d6c4ab;
+    --border-interactive: #c9562a;
+    --border-menu-top: #e8dccb;
+
+    --button-inverted: #c9562a;
+    --button-inverted-hover: #a9441f;
+    --button-inverted-pressed: #86351a;
+    --button-neutral: #fffdf9;
+    --button-neutral-hover: #f7f0e6;
+    --button-neutral-pressed: #ede0cd;
+    --button-transparent-hover: rgba(53, 36, 26, 0.06);
+    --button-transparent-pressed: rgba(53, 36, 26, 0.1);
+
+    --buttons-inverted: 0px 0px 0px 1px #a9441f, 0px 1px 2px 0px rgba(34, 23, 15, 0.24);
+    --buttons-inverted-focus: 0px 0px 0px 1px #a9441f, 0px 0px 0px 2px #fdfaf5, 0px 0px 0px 4px rgba(201, 86, 42, 0.6);
+    --buttons-neutral: 0px 0px 0px 1px #dcc7aa, 0px 1px 2px 0px rgba(34, 23, 15, 0.08);
+    --buttons-neutral-focus: 0px 0px 0px 1px #dcc7aa, 0px 0px 0px 3px rgba(201, 86, 42, 0.45);
+    --borders-base: 0px 0px 0px 1px #e8dccb, 0px 1px 2px 0px rgba(34, 23, 15, 0.06);
+    --borders-interactive-with-active: 0px 0px 0px 1px #c9562a, 0px 0px 0px 4px rgba(201, 86, 42, 0.2);
+    --borders-interactive-with-focus: 0px 1px 2px 0px rgba(34, 23, 15, 0.08), 0px 0px 0px 1px #c9562a, 0px 0px 0px 3px rgba(201, 86, 42, 0.2);
+    --borders-interactive-with-shadow: 0px 1px 2px 0px rgba(34, 23, 15, 0.08), 0px 0px 0px 1px #c9562a;
+    --borders-focus: 0px 0px 0px 1px #fdfaf5, 0px 0px 0px 3px rgba(201, 86, 42, 0.6);
+    --elevation-card-rest: 0px 0px 0px 1px #ebdfcf, 0px 1px 2px 0px rgba(34, 23, 15, 0.05), 0px 2px 6px 0px rgba(34, 23, 15, 0.04);
+    --elevation-card-hover: 0px 0px 0px 1px #dcc7aa, 0px 4px 10px 0px rgba(34, 23, 15, 0.08), 0px 12px 24px -6px rgba(34, 23, 15, 0.12);
+  }
+
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply bg-ui-bg-base text-ui-fg-base font-sans antialiased;
+  }
+
+  /* Medusa UI <Heading> (cart, checkout, account) uses the display serif too */
+  h1.font-sans,
+  h2.font-sans {
+    font-family: "Fraunces Variable", Georgia, Cambria, serif;
+    letter-spacing: -0.01em;
+  }
+
+  ::selection {
+    background: #fadfcf;
+    color: #22170f;
+  }
+}
+
 @layer utilities {
   /* Chrome, Safari and Opera */
   .no-scrollbar::-webkit-scrollbar {
@@ -35,9 +117,9 @@
   select:-webkit-autofill,
   select:-webkit-autofill:hover,
   select:-webkit-autofill:focus {
-    border: 1px solid #212121;
-    -webkit-text-fill-color: #212121;
-    -webkit-box-shadow: 0 0 0px 1000px #fff inset;
+    border: 1px solid #d6c4ab;
+    -webkit-text-fill-color: #22170f;
+    -webkit-box-shadow: 0 0 0px 1000px #fffdf9 inset;
     transition: background-color 5000s ease-in-out 0s;
   }
 
@@ -52,6 +134,28 @@
 @layer components {
   .content-container {
     @apply max-w-[1440px] w-full mx-auto px-6;
+  }
+
+  .font-display {
+    font-family: "Fraunces Variable", Georgia, Cambria, serif;
+    font-optical-sizing: auto;
+    letter-spacing: -0.01em;
+  }
+
+  .eyebrow {
+    @apply text-[11px] leading-4 font-semibold uppercase tracking-[0.16em] text-ember-600;
+  }
+
+  .btn-ember {
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-ember-500 px-6 h-12 text-[15px] font-medium text-white shadow-[0_1px_2px_rgba(34,23,15,0.25)] transition-colors hover:bg-ember-600 active:bg-ember-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ember-300 focus-visible:ring-offset-2;
+  }
+
+  .btn-outline-light {
+    @apply inline-flex items-center justify-center gap-2 rounded-full border border-cream-50/40 px-4 xsmall:px-6 h-12 whitespace-nowrap text-[15px] font-medium text-cream-50 transition-colors hover:bg-cream-50/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cream-200;
+  }
+
+  .btn-outline {
+    @apply inline-flex items-center justify-center gap-2 rounded-full border border-bark-800/25 px-6 h-12 text-[15px] font-medium text-bark-900 transition-colors hover:bg-bark-900/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ember-300;
   }
 
   .contrast-btn {

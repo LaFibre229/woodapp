@@ -77,8 +77,7 @@ right away. Businesses see prices VAT excluded.
 default, optional different rate for businesses). Shown in the cart, checkout
 and order confirmation, and stored on each order (`metadata.deposit_amount`,
 `balance_amount`). The admin order page shows "Acompte et solde". The actual
-charge of the deposit and balance comes with the payments layer; until then the
-built-in test payment provider is used.
+charge of the deposit and balance is described under "Payments" below.
 
 **Delivery zones.** Admin > Zones de livraison: zones by CAP prefix or range
 (`20`, `20000-20999`, `*`) or province, with price under one pallet, price per
@@ -102,13 +101,95 @@ pages create requests listed in Admin > Demandes de devis, with status and notes
 name, P.IVA and SDI code or PEC (businesses), validated and saved on the order
 for the e-invoicing service later.
 
+## Payments (layer 3)
+
+**Methods.** Stripe (cards, Apple Pay, Google Pay, and PayPal or Klarna once
+turned on in the Stripe dashboard) and bank transfer (bonifico). Everything
+runs in Stripe test mode until the company exists; no P.IVA is needed for that.
+
+**Deposit at checkout.** Only the deposit is charged when the order is placed:
+the payment session is set to the deposit amount, and checkout refuses an
+order whose session no longer matches the deposit. With Stripe the deposit is
+charged right away. With bonifico the order is placed, the confirmation page
+shows the IBAN and the reference ("Acconto ordine n. X"), and the admin
+clicks "Marquer comme reçu" in the "Acompte et solde" box when the money
+arrives.
+
+**Balance before delivery.** In the order's "Acompte et solde" box, "Demander le
+solde" creates a payment link (`/it/saldo/<order>?t=<token>`) to send to the
+customer. The page lets them pay by card/PayPal through Stripe, or shows the
+bank details with the reference "Saldo ordine n. X". Cash at pickup or a
+transfer is recorded with "Marquer comme reçu". (Use this link, not Medusa's
+own "Copier le lien de paiement" button above it.)
+
+**Bank details.** Admin > Paramètres > Société et acompte > Virement bancaire:
+beneficiary, IBAN, BIC, bank. All empty by default; bank transfer is offered to
+customers only once the IBAN is filled in.
+
+**Without Stripe keys** the checkout offers the test payment ("Pagamento di
+prova") and bank transfer, so everything else can be tried locally.
+
+### Turning on Stripe test mode (Windows)
+
+1. Create a free account at https://dashboard.stripe.com/register (an email is
+   enough) and stay in **Test mode**.
+2. Developers > API keys: copy the **Secret key** (`sk_test_...`) into
+   `backend\.env` as `STRIPE_API_KEY=`, and the **Publishable key**
+   (`pk_test_...`) into `storefront\.env.local` as `NEXT_PUBLIC_STRIPE_KEY=`.
+3. Optional: Settings > Payment methods, turn on PayPal (and Apple Pay /
+   Google Pay, Klarna) in test mode.
+4. In PowerShell, from the repo root:
+   ```powershell
+   pnpm --filter wood-shop-backend exec medusa db:migrate   # adds the bank fields
+   pnpm payments:setup                                       # enables Stripe + bonifico on Italy
+   ```
+   then restart `pnpm dev` in `backend` and in `storefront`.
+5. Pay with the test card `4242 4242 4242 4242`, any future date, any CVC.
+   `4000 0027 6000 3184` tests the 3-D Secure popup.
+
+Webhooks are optional locally: checkout and the balance page confirm the
+payment themselves. To receive them anyway, install the Stripe CLI
+(`winget install Stripe.StripeCLI`), run
+`stripe listen --forward-to localhost:9000/hooks/payment/stripe_stripe`, and put
+the `whsec_...` it prints in `STRIPE_WEBHOOK_SECRET`. In production, add the
+same URL as an endpoint in the Stripe dashboard.
+
+## Branding (layer 4)
+
+**Name.** Tempio del Riscaldamento (from Admin > Paramètres > Société et
+acompte; the logo wordmark is fixed text in
+`storefront/src/modules/common/components/logo`).
+
+**Look.** Warm cream background, dark "bark" brown for text and the footer,
+ember orange for buttons and links, moss green for the business section.
+Headings use Fraunces (serif), body text Inter, both bundled with the app via
+`@fontsource` (no Google Fonts call). The colours live in
+`storefront/tailwind.config.js` (`cream`, `bark`, `ember`, `moss`) and in the
+Medusa UI variables at the top of `storefront/src/styles/globals.css`, which
+re-skin every Medusa button and field (cart, checkout and account included).
+
+**Logo.** A placeholder mark (a flame in an arched doorway over two logs) in
+`modules/common/components/logo` and `public/favicon.svg`. Replace both when
+the real logo exists.
+
+**Product pictures.** Until photos are uploaded in the admin, products show an
+illustration picked from the product or category handle (logs for wood, a sack
+for pellet, a stove for stoves): `modules/products/components/product-art`.
+Uploading a thumbnail or images in the admin replaces it automatically.
+
+**Pages.** Home (hero, reassurance strip, category tiles, product rails, how
+it works, business band), catalogue and category pages (title banner, sort
+chips), product page (gallery left, formats and price card right), and a
+mobile menu drawer. Category blurbs and order are in
+`storefront/src/lib/util/category-display.ts`.
+
 ## Not built yet (later layers)
 
-- Payments: Stripe (cards), PayPal, bank transfer, then Satispay and instalments;
-  charging the deposit, then the balance.
+- Payments: Satispay and instalments; sending the balance link by email
+  (needs the email provider from the deployment layer).
 - E-invoicing service (SdI) once the company and VAT number exist.
-- Branding: name, logo, colours, photos and copy. The UI is the starter's
-  neutral look for now.
+- Branding: final logo and real product photos (placeholders are in place, see
+  "Branding" above).
 - Deployment: hosting, domain, email, legal pages (placeholders exist at
   `/condizioni-di-vendita` and `/privacy`), live payments. Use the Redis event
   bus and cache modules in production.

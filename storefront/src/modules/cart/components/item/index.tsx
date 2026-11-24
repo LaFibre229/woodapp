@@ -12,6 +12,7 @@ import LineItemUnitPrice from "@modules/common/components/line-item-unit-price"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import Spinner from "@modules/common/icons/spinner"
 import Thumbnail from "@modules/products/components/thumbnail"
+import { productKind } from "@modules/products/components/product-art"
 import { useState } from "react"
 
 type ItemProps = {
@@ -46,7 +47,7 @@ const Item = ({ item, type = "full", currencyCode }: ItemProps) => {
 
   return (
     <Table.Row className="w-full" data-testid="product-row">
-      <Table.Cell className="!pl-0 p-4 w-24">
+      <Table.Cell className="!pl-0 p-4 w-16 small:w-24">
         <LocalizedClientLink
           href={`/products/${item.product_handle}`}
           className={clx("flex", {
@@ -55,6 +56,7 @@ const Item = ({ item, type = "full", currencyCode }: ItemProps) => {
           })}
         >
           <Thumbnail
+            kind={productKind(item.product_handle, item.title)}
             thumbnail={item.thumbnail}
             images={item.variant?.product?.images}
             size="square"
@@ -64,7 +66,7 @@ const Item = ({ item, type = "full", currencyCode }: ItemProps) => {
 
       <Table.Cell className="text-left">
         <Text
-          className="txt-medium-plus text-ui-fg-base"
+          className="txt-medium-plus text-ui-fg-base min-w-[120px]"
           data-testid="product-title"
         >
           {item.product_title}
@@ -74,7 +76,7 @@ const Item = ({ item, type = "full", currencyCode }: ItemProps) => {
 
       {type === "full" && (
         <Table.Cell>
-          <div className="flex gap-2 items-center w-28">
+          <div className="flex flex-col-reverse items-start gap-1 small:flex-row small:items-center small:gap-2 small:w-28">
             <DeleteButton id={item.id} data-testid="product-delete-button" />
             <CartItemSelect
               value={item.quantity}

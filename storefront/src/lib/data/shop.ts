@@ -24,6 +24,15 @@ export type ShopSettings = {
   pickup_notes: string | null
   deposit_percent: number
   business_deposit_percent: number | null
+  bank_transfer: BankTransfer | null
+}
+
+/** Bank details for a bonifico; null until the IBAN is set in the admin. */
+export type BankTransfer = {
+  beneficiary: string
+  iban: string
+  bic: string | null
+  bank_name: string | null
 }
 
 export type DeliveryZone = {
@@ -83,6 +92,7 @@ const FALLBACK_SETTINGS: ShopSettings = {
   pickup_notes: null,
   deposit_percent: 50,
   business_deposit_percent: null,
+  bank_transfer: null,
 }
 
 /** Company details and shop rules edited in the admin. Cached for 5 minutes. */
@@ -192,4 +202,50 @@ export async function submitQuoteRequest(
   } catch (e: any) {
     return { ok: false, error: e?.message || "Invio non riuscito. Riprova." }
   }
+}
+
+/* Balance (saldo) payment, from the link the shop sends before delivery */
+
+type PaymentPart = {
+  amount: number
+  state: "none" | "awaiting" | "authorized" | "paid" | "canceled"
+  provider_id: string | null
+}
+
+export type BalanceInfo = {
+  order: { id: string; display_id: number; currency_code: string; total: number }
+  deposit: PaymentPart
+  balance: PaymentPart
+  providers: string[]
+  bank_transfer: BankTransfer | null
+  session: { id: string; provider_id: string; client_secret: string | null } | null
+}
+
+export const getBalance = async (orderId: string, token: string): Promise<BalanceInfo | null> =>
+  sdk.client
+    .fetch<BalanceInfo>(`/store/balance/${orderId}`, {
+      query: { t: token },
+      cache: "no-store",
+    })
+    .catch(() => null)
+
+export async function startBalancePayment(orderId: string, token: string) {
+  return sdk.client
+    .fetch<{ session: NonNullable<BalanceInfo["session"]> }>(
+      `/store/balance/${orderId}/session`,
+      { method: "POST", body: { t: token }, cache: "no-store" }
+    )
+    .then(({ session }) => ({ session, error: null as string | null }))
+    .catch((e) => ({ session: null, error: (e?.message as string) || "Errore" }))
+}
+
+export async function confirmBalancePayment(orderId: string, token: string) {
+  return sdk.client
+    .fetch<{ balance: PaymentPart }>(`/store/balance/${orderId}/complete`, {
+      method: "POST",
+      body: { t: token },
+      cache: "no-store",
+    })
+    .then(({ balance }) => ({ balance, error: null as string | null }))
+    .catch((e) => ({ balance: null, error: (e?.message as string) || "Errore" }))
 }

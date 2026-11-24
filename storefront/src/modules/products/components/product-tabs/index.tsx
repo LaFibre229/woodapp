@@ -68,27 +68,27 @@ const ProductInfoTab = ({ product }: ProductTabsProps) => {
     ([k, v]) => SPEC_LABELS[k] && v !== null && v !== undefined && v !== ""
   )
   return (
-    <div className="text-small-regular py-8">
+    <div className="text-[14px] leading-relaxed text-ui-fg-subtle py-6">
       <dl className="grid grid-cols-2 gap-x-8 gap-y-4">
         <div>
-          <dt className="font-semibold">Tipologia</dt>
+          <dt className="font-semibold text-bark-900">Tipologia</dt>
           <dd>{product.type ? product.type.value : "-"}</dd>
         </div>
         {product.material && (
           <div>
-            <dt className="font-semibold">Materiale</dt>
+            <dt className="font-semibold text-bark-900">Materiale</dt>
             <dd>{product.material}</dd>
           </div>
         )}
         {specs.map(([k, v]) => (
           <div key={k}>
-            <dt className="font-semibold">{SPEC_LABELS[k]}</dt>
+            <dt className="font-semibold text-bark-900">{SPEC_LABELS[k]}</dt>
             <dd>{formatSpec(v)}</dd>
           </div>
         ))}
         {product.origin_country && (
           <div>
-            <dt className="font-semibold">Origine</dt>
+            <dt className="font-semibold text-bark-900">Origine</dt>
             <dd>{product.origin_country.toUpperCase()}</dd>
           </div>
         )}
@@ -99,31 +99,31 @@ const ProductInfoTab = ({ product }: ProductTabsProps) => {
 
 const ShippingInfoTab = () => {
   return (
-    <div className="text-small-regular py-8">
+    <div className="text-[14px] leading-relaxed text-ui-fg-subtle py-6">
       <div className="grid grid-cols-1 gap-y-8">
-        <div className="flex items-start gap-x-2">
+        <div className="flex items-start gap-x-3">
           <FastDelivery />
           <div>
-            <span className="font-semibold">Consegna in tutta Italia</span>
+            <span className="font-semibold text-bark-900">Consegna in tutta Italia</span>
             <p className="max-w-sm">
               Consegniamo con i nostri camion o con corriere bancali. Il costo dipende dalla
               zona e dal numero di bancali: verifica il tuo CAP qui accanto.
             </p>
           </div>
         </div>
-        <div className="flex items-start gap-x-2">
+        <div className="flex items-start gap-x-3">
           <Refresh />
           <div>
-            <span className="font-semibold">Ritiro in sede gratuito</span>
+            <span className="font-semibold text-bark-900">Ritiro in sede gratuito</span>
             <p className="max-w-sm">
               Puoi scegliere il ritiro presso la nostra sede al momento dell&apos;ordine.
             </p>
           </div>
         </div>
-        <div className="flex items-start gap-x-2">
+        <div className="flex items-start gap-x-3">
           <Back />
           <div>
-            <span className="font-semibold">Acconto per prenotare</span>
+            <span className="font-semibold text-bark-900">Acconto per prenotare</span>
             <p className="max-w-sm">
               Paghi un acconto all&apos;ordine e il saldo prima della consegna o al ritiro.
             </p>
@@ -135,7 +135,7 @@ const ShippingInfoTab = () => {
 }
 
 const StoveInfoTab = () => (
-  <div className="text-small-regular py-8 flex flex-col gap-y-4">
+  <div className="text-[14px] leading-relaxed text-ui-fg-subtle py-6 flex flex-col gap-y-4">
     <p>
       La stufa viene venduta senza installazione. Per legge l&apos;installazione deve essere
       eseguita da un tecnico abilitato, che rilascia la dichiarazione di conformità. Possiamo

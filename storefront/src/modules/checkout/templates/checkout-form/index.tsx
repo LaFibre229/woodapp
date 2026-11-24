@@ -1,3 +1,4 @@
+import { isBonifico, isManual, isStripeLike } from "@lib/constants"
 import { listCartShippingMethods } from "@lib/data/fulfillment"
 import { listCartPaymentMethods } from "@lib/data/payment"
 import { getCartDeposit, getShopSettings } from "@lib/data/shop"
@@ -25,6 +26,10 @@ export default async function CheckoutForm({
     getCartDeposit(cart.id),
   ])
 
+  const stripeEnabled =
+    !!process.env.NEXT_PUBLIC_STRIPE_KEY &&
+    paymentMethods?.some((pm) => isStripeLike(pm.id))
+
   if (!shippingMethods || !paymentMethods) {
     return null
   }
@@ -46,7 +51,18 @@ export default async function CheckoutForm({
         pickupNotes={settings.pickup_notes}
       />
 
-      <Payment cart={cart} availablePaymentMethods={paymentMethods} />
+      <Payment
+        cart={cart}
+        availablePaymentMethods={paymentMethods.filter((pm) => {
+          // Stripe needs its publishable key in the storefront
+          if (isStripeLike(pm.id)) return stripeEnabled
+          // Bank transfer is offered once the IBAN is set in the admin
+          if (isBonifico(pm.id)) return !!settings.bank_transfer
+          // The test payment is only for local setups without Stripe
+          if (isManual(pm.id)) return !stripeEnabled
+          return true
+        })}
+      />
 
       <Review cart={cart} deposit={deposit} companyName={settings.company_name} />
     </div>

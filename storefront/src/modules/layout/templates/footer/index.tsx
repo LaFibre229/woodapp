@@ -1,8 +1,10 @@
 import { listCategories } from "@lib/data/categories"
 import { getShopSettings } from "@lib/data/shop"
+import { sortCategories } from "@lib/util/category-display"
 import { Text } from "@medusajs/ui"
 
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
+import Logo from "@modules/common/components/logo"
 
 /**
  * Footer with the legal details Italian law requires on a shop site (company
@@ -34,33 +36,29 @@ export default async function Footer() {
   ].filter(Boolean)
 
   return (
-    <footer className="border-t border-ui-border-base w-full">
+    <footer className="w-full bg-bark-900 text-cream-200">
       <div className="content-container flex flex-col w-full">
-        <div className="flex flex-col gap-y-10 small:flex-row items-start justify-between py-20">
+        <div className="flex flex-col gap-y-12 small:flex-row items-start justify-between pt-16 pb-12 small:pt-20">
           <div className="flex flex-col gap-y-3 max-w-xs">
-            <LocalizedClientLink
-              href="/"
-              className="txt-compact-xlarge-plus text-ui-fg-subtle hover:text-ui-fg-base uppercase"
-            >
-              {settings.company_name}
+            <LocalizedClientLink href="/" aria-label={settings.company_name}>
+              <Logo tone="light" />
             </LocalizedClientLink>
-            <Text className="txt-small text-ui-fg-subtle">
+            <Text className="txt-small text-cream-300 mt-2">
               Legna da ardere, pellet e stufe con consegna in tutta Italia, per famiglie e
               aziende.
             </Text>
           </div>
-          <div className="text-small-regular gap-10 md:gap-x-16 grid grid-cols-2 sm:grid-cols-3">
+          <div className="text-small-regular gap-10 small:gap-x-16 grid grid-cols-2 small:grid-cols-3 w-full small:w-auto">
             {productCategories && productCategories.length > 0 && (
               <div className="flex flex-col gap-y-2">
-                <span className="txt-small-plus txt-ui-fg-base">Prodotti</span>
-                <ul className="grid grid-cols-1 gap-2 text-ui-fg-subtle txt-small" data-testid="footer-categories">
-                  {productCategories
-                    .filter((c) => !c.parent_category)
+                <span className="eyebrow !text-ember-300">Prodotti</span>
+                <ul className="grid grid-cols-1 gap-2 text-cream-200 txt-small" data-testid="footer-categories">
+                  {sortCategories(productCategories.filter((c) => !c.parent_category))
                     .slice(0, 6)
                     .map((c) => (
                       <li key={c.id}>
                         <LocalizedClientLink
-                          className="hover:text-ui-fg-base"
+                          className="hover:text-ember-300"
                           href={`/categories/${c.handle}`}
                           data-testid="category-link"
                         >
@@ -72,45 +70,45 @@ export default async function Footer() {
               </div>
             )}
             <div className="flex flex-col gap-y-2">
-              <span className="txt-small-plus txt-ui-fg-base">Servizi</span>
-              <ul className="grid grid-cols-1 gap-2 text-ui-fg-subtle txt-small">
+              <span className="eyebrow !text-ember-300">Servizi</span>
+              <ul className="grid grid-cols-1 gap-2 text-cream-200 txt-small">
                 <li>
-                  <LocalizedClientLink className="hover:text-ui-fg-base" href="/consegne">
+                  <LocalizedClientLink className="hover:text-ember-300" href="/consegne">
                     Zone di consegna
                   </LocalizedClientLink>
                 </li>
                 <li>
-                  <LocalizedClientLink className="hover:text-ui-fg-base" href="/preventivo">
+                  <LocalizedClientLink className="hover:text-ember-300" href="/preventivo">
                     Preventivo camion e aziende
                   </LocalizedClientLink>
                 </li>
                 <li>
-                  <LocalizedClientLink className="hover:text-ui-fg-base" href="/account">
+                  <LocalizedClientLink className="hover:text-ember-300" href="/account">
                     Area clienti
                   </LocalizedClientLink>
                 </li>
               </ul>
             </div>
             <div className="flex flex-col gap-y-2">
-              <span className="txt-small-plus txt-ui-fg-base">Contatti</span>
-              <ul className="grid grid-cols-1 gap-2 text-ui-fg-subtle txt-small">
+              <span className="eyebrow !text-ember-300">Contatti</span>
+              <ul className="grid grid-cols-1 gap-2 text-cream-200 txt-small">
                 {settings.phone && (
                   <li>
-                    <a className="hover:text-ui-fg-base" href={`tel:${settings.phone.replace(/\s/g, "")}`}>
+                    <a className="hover:text-ember-300" href={`tel:${settings.phone.replace(/\s/g, "")}`}>
                       {settings.phone}
                     </a>
                   </li>
                 )}
                 {settings.email && (
                   <li>
-                    <a className="hover:text-ui-fg-base" href={`mailto:${settings.email}`}>
+                    <a className="hover:text-ember-300" href={`mailto:${settings.email}`}>
                       {settings.email}
                     </a>
                   </li>
                 )}
                 {settings.opening_hours && <li className="whitespace-pre-line">{settings.opening_hours}</li>}
                 <li>
-                  <LocalizedClientLink className="hover:text-ui-fg-base" href="/contatti">
+                  <LocalizedClientLink className="hover:text-ember-300" href="/contatti">
                     Tutti i contatti
                   </LocalizedClientLink>
                 </li>
@@ -118,7 +116,7 @@ export default async function Footer() {
             </div>
           </div>
         </div>
-        <div className="flex flex-col gap-y-1 w-full mb-16 text-ui-fg-muted">
+        <div className="flex flex-col gap-y-1 w-full py-8 border-t border-cream-50/10 text-cream-300/70">
           <Text className="txt-compact-small" data-testid="footer-legal">
             © {new Date().getFullYear()} {legal.join(" · ")}
           </Text>

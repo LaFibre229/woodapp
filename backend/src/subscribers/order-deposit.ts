@@ -24,7 +24,19 @@ export default async function orderDeposit({
   const query = container.resolve(ContainerRegistrationKeys.QUERY)
   const { data: orders } = await query.graph({
     entity: "order",
-    fields: ["id", "total", "metadata", "customer.metadata", "customer.groups.id"],
+    fields: [
+      "id",
+      "total",
+      "metadata",
+      "customer.metadata",
+      "customer.groups.id",
+      "payment_collections.id",
+      "payment_collections.amount",
+      "payment_collections.status",
+      "payment_collections.authorized_amount",
+      "payment_collections.captured_amount",
+      "payment_collections.payment_sessions.amount",
+    ],
     filters: { id: data.id },
   })
   const order = orders[0] as any
@@ -50,6 +62,31 @@ export default async function orderDeposit({
       },
     },
   ])
+
+  // The checkout charged only the deposit: size the order's payment
+  // collection to it, so the order reads as paid for that part and the
+  // balance is requested later as its own payment.
+  const pc = (order.payment_collections ?? [])[0]
+  const sessionAmount = toNumber(pc?.payment_sessions?.[0]?.amount)
+  if (
+    pc &&
+    deposit.balance_amount > 0 &&
+    Math.abs(sessionAmount - deposit.deposit_amount) < 0.005 &&
+    Math.abs(toNumber(pc.amount) - deposit.deposit_amount) >= 0.005
+  ) {
+    // Medusa does not recompute the status on an amount change, so apply the
+    // same rule as the payment module: covered by authorizations/captures.
+    const covers = (v: unknown) => toNumber(v) + 0.005 >= deposit.deposit_amount
+    const status = covers(pc.captured_amount)
+      ? "completed"
+      : covers(pc.authorized_amount)
+        ? "authorized"
+        : pc.status
+    await container.resolve(Modules.PAYMENT).updatePaymentCollections(pc.id, {
+      amount: deposit.deposit_amount,
+      status,
+    } as any)
+  }
 }
 
 export const config: SubscriberConfig = {

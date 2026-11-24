@@ -17,7 +17,7 @@ export default function ProductPrice({
   if (variant && isQuoteOnly(variant)) {
     return (
       <div className="flex flex-col">
-        <span className="text-xl-semi">Prezzo su preventivo</span>
+        <span className="font-display text-[28px] leading-tight text-bark-900">Prezzo su preventivo</span>
         <span className="text-small-regular text-ui-fg-subtle">
           Ti rispondiamo con il prezzo migliore per la tua zona.
         </span>
@@ -40,12 +40,16 @@ export default function ProductPrice({
 
   return (
     <div className="flex flex-col text-ui-fg-base">
-      <span className={clx("text-xl-semi", { "text-ui-fg-interactive": price.onSale })}>
-        {!variant && "A partire da "}
+      <span
+        className={clx("font-display text-[32px] leading-tight text-bark-900", {
+          "!text-ember-600": price.onSale,
+        })}
+      >
+        {!variant && <span className="text-[18px]">A partire da </span>}
         <span data-testid="product-price" data-value={price.amount}>
           {fmt(price.amount)}
         </span>
-        <span className="text-small-regular text-ui-fg-subtle"> {price.vatLabel}</span>
+        <span className="font-sans text-[13px] text-ui-fg-muted"> {price.vatLabel}</span>
       </span>
       {price.onSale && (
         <p className="text-small-regular">

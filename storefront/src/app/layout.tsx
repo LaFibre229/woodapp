@@ -1,5 +1,7 @@
 import { getBaseURL } from "@lib/util/env"
-import { Metadata } from "next"
+import { Metadata, Viewport } from "next"
+import "@fontsource-variable/inter"
+import "@fontsource-variable/fraunces"
 import "styles/globals.css"
 
 export const metadata: Metadata = {
@@ -10,6 +12,11 @@ export const metadata: Metadata = {
   },
   description:
     "Legna da ardere, pellet e stufe con consegna in tutta Italia, per famiglie e aziende.",
+  icons: { icon: "/favicon.svg" },
+}
+
+export const viewport: Viewport = {
+  themeColor: "#22170f",
 }
 
 export default function RootLayout(props: { children: React.ReactNode }) {

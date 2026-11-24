@@ -16,7 +16,7 @@ export default async function ContactPage() {
   ]
   return (
     <div className="content-container py-12 flex flex-col gap-y-6 max-w-2xl">
-      <Heading level="h1" className="text-3xl">
+      <Heading level="h1" className="text-[34px] small:text-[44px] leading-tight text-bark-900">
         Contatti
       </Heading>
       <Text className="text-ui-fg-subtle">

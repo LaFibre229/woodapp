@@ -14,7 +14,7 @@ export default async function DeliveryZonesPage() {
   return (
     <div className="content-container py-12 flex flex-col gap-y-8">
       <div className="flex flex-col gap-y-2 max-w-2xl">
-        <Heading level="h1" className="text-3xl">
+        <Heading level="h1" className="text-[34px] small:text-[44px] leading-tight text-bark-900">
           Zone di consegna
         </Heading>
         <Text className="text-ui-fg-subtle">
