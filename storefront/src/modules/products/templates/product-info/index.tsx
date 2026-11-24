@@ -1,5 +1,5 @@
 import { HttpTypes } from "@medusajs/types"
-import { Heading, Text } from "@medusajs/ui"
+import { ChevronRightMini } from "@medusajs/icons"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 
 type ProductInfoProps = {
@@ -9,33 +9,40 @@ type ProductInfoProps = {
 const ProductInfo = ({ product }: ProductInfoProps) => {
   const category = product.categories?.[0]
   return (
-    <div id="product-info">
-      <div className="flex flex-col gap-y-4 lg:max-w-[500px] mx-auto">
+    <div id="product-info" className="flex flex-col gap-y-3">
+      <nav aria-label="Percorso" className="flex items-center gap-1 text-[13px] text-ui-fg-muted">
+        <LocalizedClientLink href="/" className="hover:text-ember-600">
+          Home
+        </LocalizedClientLink>
         {category && (
-          <LocalizedClientLink
-            href={`/categories/${category.handle}`}
-            className="text-medium text-ui-fg-muted hover:text-ui-fg-subtle"
-          >
-            {category.name}
-          </LocalizedClientLink>
+          <>
+            <ChevronRightMini />
+            <LocalizedClientLink
+              href={`/categories/${category.handle}`}
+              className="hover:text-ember-600"
+            >
+              {category.name}
+            </LocalizedClientLink>
+          </>
         )}
-        <Heading
-          level="h1"
-          className="text-3xl leading-10 text-ui-fg-base"
-          data-testid="product-title"
-        >
-          {product.title}
-        </Heading>
-        {product.subtitle && (
-          <Text className="text-medium text-ui-fg-base">{product.subtitle}</Text>
-        )}
-        <Text
-          className="text-medium text-ui-fg-subtle whitespace-pre-line"
+      </nav>
+      <h1
+        className="font-display text-[32px] small:text-[44px] leading-[1.1] text-bark-900"
+        data-testid="product-title"
+      >
+        {product.title}
+      </h1>
+      {product.subtitle && (
+        <p className="text-[16px] font-medium text-ember-700">{product.subtitle}</p>
+      )}
+      {product.description && (
+        <p
+          className="text-[15px] leading-relaxed text-ui-fg-subtle whitespace-pre-line max-w-prose"
           data-testid="product-description"
         >
           {product.description}
-        </Text>
-      </div>
+        </p>
+      )}
     </div>
   )
 }

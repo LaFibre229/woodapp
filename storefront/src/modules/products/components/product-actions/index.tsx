@@ -87,7 +87,7 @@ export default function ProductActions({
     <div className="flex flex-col gap-y-4">
       {variants.length > 1 && (
         <div className="flex flex-col gap-y-3">
-          <span className="text-sm">Scegli il formato</span>
+          <span className="eyebrow">Scegli il formato</span>
           <div className="flex flex-col gap-2" data-testid="product-options">
             {variants.map((v) => {
               const price = displayPrice(v, isBusiness)
@@ -103,14 +103,25 @@ export default function ProductActions({
                   disabled={!!disabled || isAdding}
                   data-testid="option-button"
                   className={clx(
-                    "flex items-center justify-between border rounded-rounded px-3 py-2 text-small-regular text-left bg-ui-bg-subtle",
+                    "flex items-center justify-between gap-3 border rounded-rounded px-4 min-h-[52px] py-2 text-[14px] text-left transition-colors",
                     active
-                      ? "border-ui-border-interactive"
-                      : "border-ui-border-base hover:shadow-elevation-card-rest"
+                      ? "border-ember-500 bg-ember-50 ring-1 ring-ember-500"
+                      : "border-ui-border-strong bg-cream-50 hover:border-bark-500"
                   )}
                 >
-                  <span>{v.title}</span>
-                  <span className="text-ui-fg-subtle">
+                  <span className="flex items-center gap-3">
+                    <span
+                      aria-hidden="true"
+                      className={clx(
+                        "h-4 w-4 shrink-0 rounded-full border-2",
+                        active ? "border-ember-500 bg-[radial-gradient(circle,#C9562A_45%,transparent_50%)]" : "border-ui-border-strong"
+                      )}
+                    />
+                    <span className={clx("font-medium", active ? "text-bark-900" : "text-bark-700")}>
+                      {v.title}
+                    </span>
+                  </span>
+                  <span className={clx("whitespace-nowrap", active ? "text-bark-900 font-semibold" : "text-ui-fg-subtle")}>
                     {isQuoteOnly(v)
                       ? "Su preventivo"
                       : price
@@ -142,13 +153,13 @@ export default function ProductActions({
       ) : (
         <>
           <div className="flex items-center gap-x-2">
-            <label htmlFor="quantity" className="text-small-regular text-ui-fg-subtle">
+            <label htmlFor="quantity" className="text-[14px] text-ui-fg-subtle">
               Quantità
             </label>
-            <div className="flex items-center border rounded-rounded border-ui-border-base">
+            <div className="flex items-center border rounded-full border-ui-border-strong bg-cream-50">
               <button
                 type="button"
-                className="px-3 h-10"
+                className="px-4 h-11 text-lg text-bark-700"
                 aria-label="Diminuisci"
                 onClick={() => setQuantity((q) => Math.max(1, q - 1))}
               >
@@ -163,12 +174,12 @@ export default function ProductActions({
                 onChange={(e) =>
                   setQuantity(Math.min(maxQty, Math.max(1, Number(e.target.value) || 1)))
                 }
-                className="w-14 text-center h-10 bg-transparent outline-none"
+                className="w-12 text-center h-11 bg-transparent outline-none font-medium [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                 data-testid="quantity-input"
               />
               <button
                 type="button"
-                className="px-3 h-10"
+                className="px-4 h-11 text-lg text-bark-700"
                 aria-label="Aumenta"
                 onClick={() => setQuantity((q) => Math.min(maxQty, q + 1))}
               >
@@ -180,7 +191,7 @@ export default function ProductActions({
             onClick={handleAddToCart}
             disabled={!inStock || !selectedVariant || !!disabled || isAdding}
             variant="primary"
-            className="w-full h-10"
+            className="w-full h-12 !rounded-full text-[15px]"
             isLoading={isAdding}
             data-testid="add-product-button"
           >

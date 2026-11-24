@@ -13,7 +13,7 @@ export default async function QuotePage() {
   return (
     <div className="content-container py-12 grid grid-cols-1 small:grid-cols-2 gap-12">
       <div className="flex flex-col gap-y-4">
-        <Heading level="h1" className="text-3xl">
+        <Heading level="h1" className="text-[34px] small:text-[44px] leading-tight text-bark-900">
           Preventivo per camion completo e grandi quantità
         </Heading>
         <Text className="text-ui-fg-subtle">

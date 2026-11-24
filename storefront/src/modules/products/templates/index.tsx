@@ -2,6 +2,7 @@ import React, { Suspense } from "react"
 
 import ImageGallery from "@modules/products/components/image-gallery"
 import ProductActions from "@modules/products/components/product-actions"
+import { productKind } from "@modules/products/components/product-art"
 import ProductTabs from "@modules/products/components/product-tabs"
 import RelatedProducts from "@modules/products/components/related-products"
 import ProductInfo from "@modules/products/templates/product-info"
@@ -28,35 +29,40 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
     return notFound()
   }
 
+  const kind = productKind(
+    product.handle,
+    ...(product.categories ?? []).map((c) => c.handle)
+  )
+
   return (
     <>
       <div
-        className="content-container  flex flex-col small:flex-row small:items-start py-6 relative"
+        className="content-container grid grid-cols-1 small:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] gap-8 small:gap-14 pt-4 pb-10 small:py-12"
         data-testid="product-container"
       >
-        <div className="flex flex-col small:sticky small:top-48 small:py-0 small:max-w-[300px] w-full py-8 gap-y-6">
+        <div className="small:sticky small:top-32 self-start w-full">
+          <ImageGallery images={images} kind={kind} />
+        </div>
+        <div className="flex flex-col gap-y-8 w-full">
           <ProductInfo product={product} />
+          <div className="rounded-large bg-cream-100 border border-ui-border-base p-5 small:p-7">
+            <Suspense
+              fallback={
+                <ProductActions
+                  disabled={true}
+                  product={product}
+                  region={region}
+                />
+              }
+            >
+              <ProductActionsWrapper id={product.id} region={region} />
+            </Suspense>
+          </div>
           <ProductTabs product={product} />
-        </div>
-        <div className="block w-full relative">
-          <ImageGallery images={images} />
-        </div>
-        <div className="flex flex-col small:sticky small:top-48 small:py-0 small:max-w-[300px] w-full py-8 gap-y-12">
-          <Suspense
-            fallback={
-              <ProductActions
-                disabled={true}
-                product={product}
-                region={region}
-              />
-            }
-          >
-            <ProductActionsWrapper id={product.id} region={region} />
-          </Suspense>
         </div>
       </div>
       <div
-        className="content-container my-16 small:my-32"
+        className="content-container my-12 small:my-24"
         data-testid="related-products-container"
       >
         <Suspense fallback={<SkeletonRelatedProducts />}>

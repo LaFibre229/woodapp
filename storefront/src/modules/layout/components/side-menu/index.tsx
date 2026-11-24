@@ -1,18 +1,20 @@
 "use client"
 
 import { Popover, PopoverPanel, Transition } from "@headlessui/react"
-import { XMark } from "@medusajs/icons"
-import { Text } from "@medusajs/ui"
+import { BarsThree, XMark } from "@medusajs/icons"
 import { Fragment } from "react"
 
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
+import Logo from "@modules/common/components/logo"
 
-const SideMenuItems: [string, string][] = [
-  ["Home", "/"],
+const MainItems: [string, string][] = [
   ["Legna da ardere", "/categories/legna-da-ardere"],
   ["Pellet", "/categories/pellet"],
   ["Stufe", "/categories/stufe"],
   ["Tutti i prodotti", "/store"],
+]
+
+const OtherItems: [string, string][] = [
   ["Preventivo camion", "/preventivo"],
   ["Zone di consegna", "/consegne"],
   ["Contatti", "/contatti"],
@@ -30,15 +32,16 @@ const SideMenu = ({ companyName }: { companyName: string }) => {
               <div className="relative flex h-full">
                 <Popover.Button
                   data-testid="nav-menu-button"
-                  className="relative h-full flex items-center transition-all ease-out duration-200 focus:outline-none hover:text-ui-fg-base"
+                  aria-label="Apri menu"
+                  className="relative h-full flex items-center -ml-2 px-2 text-bark-800 focus:outline-none"
                 >
-                  Menu
+                  <BarsThree />
                 </Popover.Button>
               </div>
 
               {open && (
                 <div
-                  className="fixed inset-0 z-[50] bg-black/0 pointer-events-auto"
+                  className="fixed inset-0 z-[50] bg-bark-900/40 pointer-events-auto"
                   onClick={close}
                   data-testid="side-menu-backdrop"
                 />
@@ -47,43 +50,61 @@ const SideMenu = ({ companyName }: { companyName: string }) => {
               <Transition
                 show={open}
                 as={Fragment}
-                enter="transition ease-out duration-150"
-                enterFrom="opacity-0"
-                enterTo="opacity-100 backdrop-blur-2xl"
+                enter="transition ease-out duration-200"
+                enterFrom="opacity-0 -translate-x-4"
+                enterTo="opacity-100 translate-x-0"
                 leave="transition ease-in duration-150"
-                leaveFrom="opacity-100 backdrop-blur-2xl"
-                leaveTo="opacity-0"
+                leaveFrom="opacity-100 translate-x-0"
+                leaveTo="opacity-0 -translate-x-4"
               >
-                <PopoverPanel className="flex flex-col absolute w-full pr-4 sm:pr-0 sm:w-1/3 2xl:w-1/4 sm:min-w-min h-[calc(100vh-1rem)] z-[51] inset-x-0 text-sm text-ui-fg-on-color m-2 backdrop-blur-2xl">
+                <PopoverPanel className="fixed left-0 top-0 h-[100dvh] w-[86%] max-w-sm z-[51] text-cream-50">
                   <div
                     data-testid="nav-menu-popup"
-                    className="flex flex-col h-full bg-[rgba(3,7,18,0.6)] rounded-rounded justify-between p-6"
+                    className="flex flex-col h-full bg-bark-900 justify-between p-6 shadow-2xl"
                   >
-                    <div className="flex justify-end" id="xmark">
-                      <button
-                        data-testid="close-menu-button"
-                        aria-label="Chiudi menu"
-                        onClick={close}
-                      >
-                        <XMark />
-                      </button>
+                    <div>
+                      <div className="flex items-center justify-between mb-10" id="xmark">
+                        <Logo tone="light" />
+                        <button
+                          data-testid="close-menu-button"
+                          aria-label="Chiudi menu"
+                          onClick={close}
+                          className="p-2 -mr-2"
+                        >
+                          <XMark />
+                        </button>
+                      </div>
+                      <ul className="flex flex-col gap-1">
+                        {MainItems.map(([name, href]) => (
+                          <li key={href}>
+                            <LocalizedClientLink
+                              href={href}
+                              className="block font-display text-[28px] leading-[44px] hover:text-ember-300"
+                              onClick={close}
+                            >
+                              {name}
+                            </LocalizedClientLink>
+                          </li>
+                        ))}
+                      </ul>
+                      <div className="h-px bg-cream-50/15 my-6" />
+                      <ul className="flex flex-col gap-3 text-[15px] text-cream-200">
+                        {OtherItems.map(([name, href]) => (
+                          <li key={href}>
+                            <LocalizedClientLink
+                              href={href}
+                              className="hover:text-ember-300"
+                              onClick={close}
+                            >
+                              {name}
+                            </LocalizedClientLink>
+                          </li>
+                        ))}
+                      </ul>
                     </div>
-                    <ul className="flex flex-col gap-4 items-start justify-start">
-                      {SideMenuItems.map(([name, href]) => (
-                        <li key={href}>
-                          <LocalizedClientLink
-                            href={href}
-                            className="text-2xl leading-9 hover:text-ui-fg-disabled"
-                            onClick={close}
-                          >
-                            {name}
-                          </LocalizedClientLink>
-                        </li>
-                      ))}
-                    </ul>
-                    <Text className="flex justify-between txt-compact-small">
+                    <p className="text-[12px] text-cream-300/70">
                       © {new Date().getFullYear()} {companyName}
-                    </Text>
+                    </p>
                   </div>
                 </PopoverPanel>
               </Transition>
